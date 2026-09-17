@@ -87,7 +87,13 @@ settings:
   provider: Provedor
   model: Modelo
   modelCustom: Modelo personalizado
+  baseUrl: URL base
+  useOwnServer: Usar meu próprio servidor
+  ownServerHintOpenai: "Funciona com Ollama, LM Studio, vLLM ou qualquer servidor compatível com OpenAI."
+  ownServerHintAnthropic: "Funciona com um proxy LiteLLM ou qualquer servidor compatível com Anthropic."
   apiKey: Chave da API
+  showKey: Mostrar chave
+  hideKey: Ocultar chave
   aiLanguage: "Idioma das descrições"
   voiceNarration: "Narração por voz"
   voiceUsingAiKey: "Não tem chave de voz, então o Mimik usa a chave da OpenAI das Descrições com IA lá de cima."
@@ -125,8 +131,12 @@ settings:
   validatingKey: "Verificando chave\u2026"
   keyValid: Chave de API verificada.
   keyInvalid: Essa chave de API foi recusada. Verifique-a e tente novamente.
+  keyModelRequired: Escolha um modelo antes de verificar esta chave.
+  keyModelInvalid: O modelo selecionado não está disponível neste provedor.
   checkKey: Verificar chave
+  keyCannotSpend: "Esta chave não tem créditos, então só modelos gratuitos vão funcionar."
   keyUnreachable: Não deu pra falar com o provedor. Confere sua conexão e tenta de novo.
+  modelsFound: "$1 modelos disponíveis"
   smartBlur: Desfoque inteligente
   privacyNotice: "Suas chaves e seu áudio vão só pro provedor que você escolher. Nada mais sai do seu navegador."
   bugReport: "Achou um bug? Reporta no GitHub"
@@ -363,6 +373,10 @@ exportPreview:
   stepDescriptions: "Textos da etapa"
   stepDescriptionsHint: "Desenhar o texto da etapa em cada quadro"
   resolution: "Qualidade do vídeo"
+  gifQuality: "Qualidade do GIF"
+  gif_low: "Baixa"
+  gif_medium: "Média"
+  gif_high: "Alta"
   res_720p: "720p"
   res_1080p: "1080p"
   title: "Prévia da exportação"
@@ -396,6 +410,7 @@ exportMenu:
   html: HTML
   markdown: Markdown
   pdf: PDF
+  gif: GIF
   video: Vídeo
   cancelProgress: "Cancelar · $1%"
 
@@ -456,6 +471,7 @@ steps:
   click: "Clicar em $1"
   typeIntoField: "Digitar no campo $1 $2"
   typeInto: "Digitar em $1"
+  typeSecret: "Digitar senha"
   copyFrom: "Copiar de $1"
   pasteInto: "Colar em $1"
   cutFrom: "Recortar de $1"
@@ -518,3 +534,24 @@ micPermission:
   deniedMessage: Seu navegador está bloqueando o microfone para o Mimik, então a narração por voz não pode gravar. Abra as configurações do site pelo ícone à esquerda da barra de endereços, defina Microfone como Permitir e tente de novo. Capturar guias continua funcionando sem isso.
   retry: Tentar de novo
   privacy: O áudio fica apenas na memória enquanto você grava e é enviado ao provedor de transcrição que você configurou. O Mimik nunca o armazena.
+
+aiStatus:
+  rejected: "$1 rejeitou sua chave de API."
+  noCredits: "Sua conta $1 não tem créditos."
+  rateLimited: "$1 está limitando a frequência das requisições do Mimik."
+  modelInvalid: "$1 não oferece esse modelo para sua conta."
+  quota: "Essa requisição foi grande demais para este modelo."
+  network: "O Mimik não conseguiu contatar $1."
+  unknown: "$1 recusou a requisição."
+  actionCheckKey: "Confira sua chave em Configurações."
+  actionAddCredits: "Adicione créditos e verifique a chave de novo."
+  actionWait: "Espere um momento antes de continuar gravando."
+  actionPickModel: "Escolha outro modelo em Configurações."
+  actionConnection: "Verifique sua conexão."
+
+stepSource:
+  ai: "IA"
+  voice: "Voz"
+  basic: "Básica"
+  edited: "Editada"
+  hint: "De onde veio esta descrição"

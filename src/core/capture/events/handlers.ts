@@ -7,9 +7,11 @@ import { sendMessage } from '@/lib/messaging';
 import { extractDOMContext } from '../dom/context';
 import { extractElementMeta, freezeRect } from '../dom/element-meta';
 import {
+  eventTarget,
   findFocusableAncestor,
   isMimikElement,
   isNavigatingClick,
+  isSensitiveField,
   isTextField,
   isTooLarge,
 } from '../dom/element-utils';
@@ -136,7 +138,7 @@ class CaptureController {
   }
 
   private onMouseOver(e: Event) {
-    const target = this.hoverTarget((e as MouseEvent).target);
+    const target = this.hoverTarget(eventTarget(e));
     if (target === this.hovered) return;
     this.hovered = target;
     if (this.busy) return;
@@ -153,7 +155,7 @@ class CaptureController {
 
   private onClick(e: Event) {
     const me = e as MouseEvent;
-    const raw = me.target;
+    const raw = eventTarget(me);
     if (!raw || !(raw instanceof Element) || isReplayedClick(me) || me.shiftKey) return;
     const target = findFocusableAncestor(raw);
     if (isMimikElement(target)) return;
@@ -210,7 +212,7 @@ class CaptureController {
   }
 
   private onAuxClick(e: Event) {
-    const raw = (e as MouseEvent).target;
+    const raw = eventTarget(e);
     if (!raw || !(raw instanceof Element)) return;
     const target = findFocusableAncestor(raw);
     if (isMimikElement(target)) return;
@@ -219,7 +221,8 @@ class CaptureController {
 
   private onKeydown(e: Event) {
     const ke = e as KeyboardEvent;
-    const target = ke.target instanceof HTMLElement ? ke.target : document.activeElement;
+    const resolved = eventTarget(ke);
+    const target = resolved instanceof HTMLElement ? resolved : document.activeElement;
     if (!target || !(target instanceof HTMLElement) || isMimikElement(target)) return;
 
     if (this.input.active && (ke.key === 'Enter' || ke.key === 'Escape')) {
@@ -227,12 +230,12 @@ class CaptureController {
       return;
     }
 
-    if (isTextField(target)) return;
+    if (isSensitiveField(target) || isTextField(target)) return;
     this.enqueue(this.capture(`keydown:${ke.key}`, target));
   }
 
   private onInput(e: Event) {
-    const target = e.target;
+    const target = eventTarget(e);
     if (!target || !(target instanceof HTMLElement)) return;
     if (
       !(
@@ -270,10 +273,8 @@ class CaptureController {
   }
 
   private onClipboard(e: Event) {
-    const target =
-      (e as ClipboardEvent).target instanceof HTMLElement
-        ? ((e as ClipboardEvent).target as HTMLElement)
-        : document.activeElement;
+    const resolved = eventTarget(e);
+    const target = resolved instanceof HTMLElement ? resolved : document.activeElement;
     if (!target || !(target instanceof HTMLElement) || isMimikElement(target)) return;
     this.enqueue(this.capture(e.type, target));
   }
@@ -283,7 +284,7 @@ class CaptureController {
     const pe = e as PointerEvent;
     this.dragStartX = pe.pageX;
     this.dragStartY = pe.pageY;
-    this.dragStartElement = pe.target instanceof Element ? pe.target : null;
+    this.dragStartElement = eventTarget(pe);
   }
 
   private onPointerUp(e: Event) {
@@ -307,8 +308,9 @@ class CaptureController {
   }
 
   private onDragEnd(e: Event) {
-    if (!e.target || !(e.target instanceof Element) || isMimikElement(e.target)) return;
-    this.enqueue(this.capture('drag', findFocusableAncestor(e.target as Element)));
+    const target = eventTarget(e);
+    if (!target || isMimikElement(target)) return;
+    this.enqueue(this.capture('drag', findFocusableAncestor(target)));
   }
 
   stop() {

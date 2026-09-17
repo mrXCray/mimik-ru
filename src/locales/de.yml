@@ -97,9 +97,15 @@ settings:
   title: Einstellungen
   aiDescriptions: KI-Beschreibungen
   modelCustom: Eigenes Modell
+  baseUrl: Basis-URL
+  useOwnServer: Eigenen Server verwenden
+  ownServerHintOpenai: "Funktioniert mit Ollama, LM Studio, vLLM oder jedem OpenAI-kompatiblen Server."
+  ownServerHintAnthropic: "Funktioniert mit einem LiteLLM-Proxy oder jedem Anthropic-kompatiblen Server."
   provider: Anbieter
   model: Modell
   apiKey: API-Schlüssel
+  showKey: Schlüssel anzeigen
+  hideKey: Schlüssel verbergen
   aiLanguage: Sprache der Beschreibungen
   voiceNarration: Sprachkommentar
   voiceUsingAiKey: "Es ist kein Sprach-Schlüssel gesetzt, daher nutzt Mimik den OpenAI-Schlüssel aus den KI-Beschreibungen oben."
@@ -131,8 +137,12 @@ settings:
   validatingKey: "Schlüssel wird geprüft…"
   keyValid: API-Schlüssel bestätigt.
   keyInvalid: Dieser API-Schlüssel wurde abgelehnt. Prüfe ihn und versuche es erneut.
+  keyModelRequired: Wähle ein Modell, bevor du diesen Schlüssel prüfst.
+  keyModelInvalid: Das ausgewählte Modell ist bei diesem Anbieter nicht verfügbar.
   checkKey: Schlüssel prüfen
+  keyCannotSpend: "Dieser Schlüssel hat kein Guthaben, es funktionieren nur kostenlose Modelle."
   keyUnreachable: Der Anbieter war nicht erreichbar. Prüfe deine Verbindung und versuche es erneut.
+  modelsFound: "$1 Modelle verfügbar"
 
 blurPresets:
   email: E-Mail
@@ -294,6 +304,10 @@ exportPreview:
   stepDescriptions: "Schritttexte"
   stepDescriptionsHint: "Den Schritttext in jedes Videobild einzeichnen"
   resolution: "Videoqualität"
+  gifQuality: "GIF-Qualität"
+  gif_low: "Niedrig"
+  gif_medium: "Mittel"
+  gif_high: "Hoch"
   res_720p: "720p"
   res_1080p: "1080p"
   title: "Export-Vorschau"
@@ -327,6 +341,7 @@ exportMenu:
   html: HTML
   markdown: Markdown
   pdf: PDF
+  gif: GIF
   video: Video
   cancelProgress: "Abbrechen · $1 %"
 
@@ -387,6 +402,7 @@ steps:
   click: "$1 anklicken"
   typeIntoField: "In Feld $1 eingeben $2"
   typeInto: "In $1 eingeben"
+  typeSecret: "Passwort eingeben"
   copyFrom: "Aus $1 kopieren"
   pasteInto: "In $1 einfügen"
   cutFrom: "Aus $1 ausschneiden"
@@ -519,3 +535,24 @@ micPermission:
   deniedMessage: Dein Browser blockiert das Mikrofon für Mimik, daher kann der Sprachkommentar nicht aufnehmen. Öffne die Website-Einstellungen über das Symbol links in der Adressleiste, setze Mikrofon auf Zulassen und versuche es dann erneut. Anleitungen aufzeichnen funktioniert auch ohne.
   retry: Erneut versuchen
   privacy: Audio bleibt nur während der Aufnahme im Speicher und wird an den von dir konfigurierten Transkriptionsanbieter gesendet. Mimik speichert es nie.
+
+aiStatus:
+  rejected: "$1 hat deinen API-Schlüssel abgelehnt."
+  noCredits: "Dein $1-Konto hat kein Guthaben."
+  rateLimited: "$1 begrenzt, wie oft Mimik anfragen darf."
+  modelInvalid: "$1 bietet dieses Modell für dein Konto nicht an."
+  quota: "Diese Anfrage war zu groß für dieses Modell."
+  network: "Mimik konnte $1 nicht erreichen."
+  unknown: "$1 hat die Anfrage abgelehnt."
+  actionCheckKey: "Prüfe deinen Schlüssel in den Einstellungen."
+  actionAddCredits: "Guthaben aufladen, dann den Schlüssel erneut prüfen."
+  actionWait: "Warte einen Moment, bevor du weiter aufnimmst."
+  actionPickModel: "Wähle in den Einstellungen ein anderes Modell."
+  actionConnection: "Prüfe deine Verbindung."
+
+stepSource:
+  ai: "KI"
+  voice: "Stimme"
+  basic: "Einfach"
+  edited: "Bearbeitet"
+  hint: "Woher diese Beschreibung kommt"

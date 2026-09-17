@@ -14,7 +14,7 @@ import {
   toStoredMicrophoneId,
 } from '../microphones';
 
-const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR'];
+const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN'];
 
 const MICROPHONE_KEYS = [
   'settings.microphone',

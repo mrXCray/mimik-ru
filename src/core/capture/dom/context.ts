@@ -1,3 +1,5 @@
+import { isRedactedField } from './element-utils';
+
 export interface SiblingElement {
   tag: string;
   role: string | null;
@@ -81,6 +83,7 @@ function getElementValue(el: Element): string | null {
   if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio'))
     return el.checked ? 'checked' : 'unchecked';
   if (el instanceof HTMLInputElement && el.type === 'password') return '***';
+  if (isRedactedField(el)) return '***';
   if (el instanceof HTMLInputElement && el.value) return `value=${el.value.slice(0, 50)}`;
   if (el instanceof HTMLTextAreaElement && el.value) return `value=${el.value.slice(0, 50)}`;
   if (el instanceof HTMLSelectElement && el.selectedOptions.length)

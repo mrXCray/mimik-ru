@@ -87,7 +87,13 @@ settings:
   provider: Fournisseur
   model: "Modèle"
   modelCustom: Modèle personnalisé
+  baseUrl: URL de base
+  useOwnServer: Utiliser mon propre serveur
+  ownServerHintOpenai: "Fonctionne avec Ollama, LM Studio, vLLM ou tout serveur compatible OpenAI."
+  ownServerHintAnthropic: "Fonctionne avec un proxy LiteLLM ou tout serveur compatible Anthropic."
   apiKey: "Clé API"
+  showKey: Afficher la clé
+  hideKey: Masquer la clé
   aiLanguage: Langue des descriptions
   voiceNarration: "Narration vocale"
   voiceUsingAiKey: "Aucune clé vocale n'est définie : Mimik utilise la clé OpenAI des descriptions IA ci-dessus."
@@ -125,8 +131,12 @@ settings:
   validatingKey: "V\xE9rification de la cl\xE9\u2026"
   keyValid: "Cl\xE9 API v\xE9rifi\xE9e."
   keyInvalid: "Cette cl\xE9 API a \xE9t\xE9 refus\xE9e. V\xE9rifiez-la et r\xE9essayez."
+  keyModelRequired: Choisissez un modèle avant de vérifier cette clé.
+  keyModelInvalid: "Le modèle sélectionné n'est pas disponible chez ce fournisseur."
   checkKey: Vérifier la clé
+  keyCannotSpend: "Cette clé n’a pas de crédits, seuls les modèles gratuits fonctionneront."
   keyUnreachable: Le fournisseur est injoignable. Vérifiez votre connexion et réessayez.
+  modelsFound: "$1 modèles disponibles"
   smartBlur: Flou intelligent
   privacyNotice: "Vos clés et votre audio ne vont qu'au fournisseur que vous choisissez. Rien d'autre ne quitte votre navigateur."
   bugReport: "Un bug ? Signalez-le sur GitHub"
@@ -363,6 +373,10 @@ exportPreview:
   stepDescriptions: "Textes d'étape"
   stepDescriptionsHint: "Incruster le texte de l'étape sur chaque image"
   resolution: "Qualité vidéo"
+  gifQuality: "Qualité du GIF"
+  gif_low: "Basse"
+  gif_medium: "Moyenne"
+  gif_high: "Haute"
   res_720p: "720p"
   res_1080p: "1080p"
   title: "Aperçu de l’export"
@@ -396,6 +410,7 @@ exportMenu:
   html: HTML
   markdown: Markdown
   pdf: PDF
+  gif: GIF
   video: Vidéo
   cancelProgress: "Annuler · $1 %"
 
@@ -456,6 +471,7 @@ steps:
   click: "Cliquer sur $1"
   typeIntoField: "Saisir dans le champ $1 $2"
   typeInto: "Saisir dans $1"
+  typeSecret: "Saisir le mot de passe"
   copyFrom: "Copier depuis $1"
   pasteInto: "Coller dans $1"
   cutFrom: "Couper depuis $1"
@@ -518,3 +534,24 @@ micPermission:
   deniedMessage: Votre navigateur bloque le microphone pour Mimik, la narration vocale ne peut donc pas enregistrer. Ouvrez les paramètres du site depuis l'icône à gauche de la barre d'adresse, réglez Microphone sur Autoriser, puis réessayez. La capture de guides continue de fonctionner sans cela.
   retry: Réessayer
   privacy: L'audio reste en mémoire pendant l'enregistrement et n'est envoyé qu'au service de transcription que vous avez configuré. Mimik ne le conserve jamais.
+
+aiStatus:
+  rejected: "$1 a refusé votre clé API."
+  noCredits: "Votre compte $1 n’a pas de crédits."
+  rateLimited: "$1 limite la fréquence des requêtes de Mimik."
+  modelInvalid: "$1 ne propose pas ce modèle à votre compte."
+  quota: "Cette requête était trop volumineuse pour ce modèle."
+  network: "Mimik n’a pas pu joindre $1."
+  unknown: "$1 a refusé la requête."
+  actionCheckKey: "Vérifiez votre clé dans les réglages."
+  actionAddCredits: "Ajoutez des crédits, puis revérifiez la clé."
+  actionWait: "Attendez un instant avant de continuer."
+  actionPickModel: "Choisissez un autre modèle dans les réglages."
+  actionConnection: "Vérifiez votre connexion."
+
+stepSource:
+  ai: "IA"
+  voice: "Voix"
+  basic: "Simple"
+  edited: "Modifiée"
+  hint: "D’où vient cette description"

@@ -15,10 +15,12 @@ import {
   voiceErrorKey,
 } from '../voice-status';
 
-const LOCALES = ['en', 'es', 'fr', 'pt-BR'];
+const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN'];
 
 function voiceKeysIn(locale: string): string[] {
-  const lines = readFileSync(join(process.cwd(), 'src/locales', `${locale}.yml`), 'utf8').split('\n');
+  const lines = readFileSync(join(process.cwd(), 'src/locales', `${locale}.yml`), 'utf8')
+    .replace(/\r\n/g, '\n')
+    .split('\n');
   const start = lines.indexOf('voice:');
   const keys: string[] = [];
   for (const line of lines.slice(start + 1)) {

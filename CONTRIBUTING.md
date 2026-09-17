@@ -57,6 +57,12 @@ pnpm lint:fix              # auto-fix
 pnpm format                # format only
 ```
 
+### Code style
+
+Biome handles formatting and linting. Run `pnpm lint:fix` and it sorts out indentation, quotes, semicolons and import order for you.
+
+One rule Biome cannot check: do not write comments. Name things so the code explains itself. The exceptions are pragmas and directives the toolchain reads, such as `@ts-expect-error` or `biome-ignore`. When a piece of logic looks like it needs a comment to be understood, it usually wants a clearer name or a smaller function instead.
+
 ## Project Layout
 
 ```
@@ -115,6 +121,24 @@ src/
 5. Open a PR with a clear description of what and why
 
 CI (`pr-test.yml`) will run lint, tests, and both browser builds on every PR.
+
+## Using AI Tools
+
+AI-assisted contributions are welcome here.
+
+Tick the disclosure box in the pull request template and name the tools you used. Saying so costs you nothing. Passing off output you have not read is what gets a PR closed.
+
+You are responsible for every line you submit. If a reviewer asks why something is there, "the model wrote it" is not an answer. Be ready to debug it without going back to the tool.
+
+Write the pull request description yourself. Generated summaries run long and restate the diff, which reviewers can already read. Two sentences on what changed and why beats ten paragraphs. Same for issue reports and review comments.
+
+Reproduce a bug before you file it. Issues written by pointing a tool at the codebase, with no real reproduction, get closed unread.
+
+Leave `good first issue` alone. Those exist for people learning the codebase by hand.
+
+Do not run automated AI reviews on pull requests in this repo. Your own fork is fine.
+
+Repeat submissions of unread AI output will get you blocked.
 
 ## Adding a Translation
 

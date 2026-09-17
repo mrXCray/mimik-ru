@@ -544,7 +544,7 @@ function drawCursor(ctx: Ctx, x: number, y: number, scale: number) {
   ctx.restore();
 }
 
-function drawStepFrame(ctx: Ctx, layer: StepLayer, frame: number, device: Size) {
+function drawStepFrame(ctx: Ctx, layer: StepLayer, frame: number, device: Size, fps = FPS) {
   if (layer.kind === 'block') {
     drawBlockFrame(ctx, layer);
     return;
@@ -557,7 +557,7 @@ function drawStepFrame(ctx: Ctx, layer: StepLayer, frame: number, device: Size) 
       ? reserveTooltip(layer.target, tooltipBand(box), layer.bitmap, fit.height, device.width, device.height)
       : layer.target;
 
-  const crop = zoomCrop(layer.bitmap, framed, easeInOut(zoomProgress(frame)), device.width, device.height);
+  const crop = zoomCrop(layer.bitmap, framed, easeInOut(zoomProgress(frame, fps)), device.width, device.height);
   ctx.drawImage(layer.bitmap, crop.x, crop.y, crop.width, crop.height, fit.x, fit.y, fit.width, fit.height);
 
   const scale = fit.width / crop.width;
@@ -571,10 +571,10 @@ function drawStepFrame(ctx: Ctx, layer: StepLayer, frame: number, device: Size) 
       }
     : { x: FRAME_WIDTH / 2, y: FRAME_HEIGHT, width: 0, height: 0 };
 
-  const ringIn = ringProgress(frame);
+  const ringIn = ringProgress(frame, fps);
   if (layer.target && layer.ring && ringIn > 0) drawRing(ctx, anchor, layer.ring, ringIn);
 
-  const tipIn = tooltipProgress(frame);
+  const tipIn = tooltipProgress(frame, fps);
   if (box && tipIn > 0) {
     ctx.save();
     ctx.globalAlpha *= tipIn;
@@ -584,7 +584,7 @@ function drawStepFrame(ctx: Ctx, layer: StepLayer, frame: number, device: Size) 
   }
 
   if (layer.target) {
-    const travel = easeInOut(cursorProgress(frame));
+    const travel = easeInOut(cursorProgress(frame, fps));
     const tip = project(
       layer.from.x + (layer.target.x + layer.target.width * 0.42 - layer.from.x) * travel,
       layer.from.y + (layer.target.y + layer.target.height * 0.55 - layer.from.y) * travel,
@@ -657,6 +657,8 @@ async function drawCardFrame(ctx: Ctx, guide: Guide, steps: Step[], brand: Brand
 
 export type VideoOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions' | 'resolution'>;
 
+export type FrameOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions'>;
+
 export interface VideoExportControls {
   onProgress?: (done: number, total: number) => void;
   signal?: AbortSignal;
@@ -702,57 +704,24 @@ export function videoChapters(frames: Step[], cover: boolean, fps = FPS): VideoC
   }));
 }
 
-export async function exportGuideAsVideo(
+export type FrameSink = (timeSec: number, durationSec: number) => Promise<void>;
+
+export async function composeGuideFrames(
   guide: Guide,
-  steps: Step[],
+  frames: Step[],
   screenshots: Map<string, Screenshot>,
-  exportOptions?: VideoOptions,
-  controls: VideoExportControls = {},
-): Promise<VideoExportResult> {
-  const frames = steps.filter((step) => isBlock(step) || screenshots.has(step.id));
-  if (frames.length === 0) throw new Error('This guide has no screenshots to turn into a video');
-
-  const { BufferTarget, CanvasSource, Mp4OutputFormat, Output, QUALITY_HIGH, WebMOutputFormat } = await import(
-    'mediabunny'
-  );
-
-  const [brand, options] = await Promise.all([
-    loadBranding(),
-    exportOptions ? Promise.resolve(exportOptions) : loadExportOptions(),
-  ]);
-
-  const requested = RESOLUTION_SPECS[options.resolution] ? options.resolution : '720p';
-  const preferred = await pickContainer(requested);
-  const resolution = preferred ? requested : '720p';
-  const container = preferred ?? (await pickContainer('720p'));
-  if (!container) throw new Error('This browser cannot encode video');
-  const mp4 = container === 'mp4';
-  const spec = RESOLUTION_SPECS[resolution];
-
-  const canvas = document.createElement('canvas');
-  canvas.width = spec.width;
-  canvas.height = spec.height;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas 2D context unavailable');
-  ctx.scale(spec.width / FRAME_WIDTH, spec.height / FRAME_HEIGHT);
-  const device = { width: spec.width, height: spec.height };
-
-  const output = new Output({
-    format: mp4 ? new Mp4OutputFormat() : new WebMOutputFormat(),
-    target: new BufferTarget(),
-  });
-  const source = new CanvasSource(canvas, {
-    codec: mp4 ? 'avc' : 'vp9',
-    quality: QUALITY_HIGH,
-    keyFrameInterval: KEY_FRAME_INTERVAL_SEC,
-  });
-  output.addVideoTrack(source);
-  await output.start();
-
-  const span = stepFrames();
-  const overlap = overlapFrames();
+  options: FrameOptions,
+  brand: Branding,
+  ctx: Ctx,
+  device: Size,
+  sink: FrameSink,
+  controls: { onProgress?: (done: number, total: number) => void; signal?: AbortSignal } = {},
+  fps = FPS,
+): Promise<void> {
+  const span = stepFrames(fps);
+  const overlap = overlapFrames(fps);
   const stride = span - overlap;
-  const stepTotal = totalStepFrames(frames.length);
+  const stepTotal = totalStepFrames(frames.length, fps);
   const total = stepTotal + (options.cover ? 2 : 0);
   const loaded = new Map<number, StepLayer>();
   const { onProgress, signal } = controls;
@@ -804,7 +773,7 @@ export async function exportGuideAsVideo(
     if (options.cover) {
       abortIfRequested();
       await drawCardFrame(ctx, guide, cards, brand, i18n.t('export.guideLabel'));
-      await source.add(0, COVER_SECONDS);
+      await sink(0, COVER_SECONDS);
       done += 1;
       onProgress?.(done, total);
     }
@@ -825,15 +794,15 @@ export async function exportGuideAsVideo(
       ctx.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 
       if (previous) {
-        drawStepFrame(ctx, previous, local + stride, device);
+        drawStepFrame(ctx, previous, local + stride, device, fps);
         ctx.globalAlpha = (local + 1) / overlap;
-        drawStepFrame(ctx, current, local, device);
+        drawStepFrame(ctx, current, local, device, fps);
         ctx.globalAlpha = 1;
       } else {
-        drawStepFrame(ctx, current, local, device);
+        drawStepFrame(ctx, current, local, device, fps);
       }
 
-      await source.add(offset + frame / FPS, 1 / FPS);
+      await sink(offset + frame / fps, 1 / fps);
       done += 1;
       onProgress?.(done, total);
     }
@@ -841,18 +810,79 @@ export async function exportGuideAsVideo(
     if (options.cover) {
       abortIfRequested();
       await drawCardFrame(ctx, guide, cards, brand, i18n.t('export.endLabel'));
-      await source.add(offset + stepTotal / FPS, COVER_SECONDS);
+      await sink(offset + stepTotal / fps, COVER_SECONDS);
       done += 1;
       onProgress?.(done, total);
     }
+  } finally {
+    for (const layer of loaded.values()) releaseLayer(layer);
+    loaded.clear();
+  }
+}
 
+export async function exportGuideAsVideo(
+  guide: Guide,
+  steps: Step[],
+  screenshots: Map<string, Screenshot>,
+  exportOptions?: VideoOptions,
+  controls: VideoExportControls = {},
+): Promise<VideoExportResult> {
+  const frames = steps.filter((step) => isBlock(step) || screenshots.has(step.id));
+  if (frames.length === 0) throw new Error('This guide has no screenshots to turn into a video');
+
+  const { BufferTarget, CanvasSource, Mp4OutputFormat, Output, QUALITY_HIGH, WebMOutputFormat } = await import(
+    'mediabunny'
+  );
+
+  const [brand, options] = await Promise.all([
+    loadBranding(),
+    exportOptions ? Promise.resolve(exportOptions) : loadExportOptions(),
+  ]);
+
+  const requested = RESOLUTION_SPECS[options.resolution] ? options.resolution : '720p';
+  const preferred = await pickContainer(requested);
+  const resolution = preferred ? requested : '720p';
+  const container = preferred ?? (await pickContainer('720p'));
+  if (!container) throw new Error('This browser cannot encode video');
+  const mp4 = container === 'mp4';
+  const spec = RESOLUTION_SPECS[resolution];
+
+  const canvas = document.createElement('canvas');
+  canvas.width = spec.width;
+  canvas.height = spec.height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Canvas 2D context unavailable');
+  ctx.scale(spec.width / FRAME_WIDTH, spec.height / FRAME_HEIGHT);
+  const device = { width: spec.width, height: spec.height };
+
+  const output = new Output({
+    format: mp4 ? new Mp4OutputFormat() : new WebMOutputFormat(),
+    target: new BufferTarget(),
+  });
+  const source = new CanvasSource(canvas, {
+    codec: mp4 ? 'avc' : 'vp9',
+    quality: QUALITY_HIGH,
+    keyFrameInterval: KEY_FRAME_INTERVAL_SEC,
+  });
+  output.addVideoTrack(source);
+  await output.start();
+
+  try {
+    await composeGuideFrames(
+      guide,
+      frames,
+      screenshots,
+      options,
+      brand,
+      ctx,
+      device,
+      (at, dur) => source.add(at, dur),
+      controls,
+    );
     await output.finalize();
   } catch (error) {
     await output.cancel();
     throw error;
-  } finally {
-    for (const layer of loaded.values()) releaseLayer(layer);
-    loaded.clear();
   }
 
   const buffer = output.target.buffer;

@@ -4,7 +4,7 @@
 
 # Mimik
 
-**English** · [Español](./README.es.md) · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md)
+**English** · [Español](./README.es.md) · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · [简体中文](./README.zh-CN.md)
 
 **Auto-capture any browser workflow into a step-by-step guide. No account, no cloud, no tracking.**
 
@@ -40,6 +40,7 @@ Click record, do the thing, get a polished guide with annotated screenshots. Nar
   - [📤 Multi-format export](#-multi-format-export)
 - [🔐 Privacy & storage](#-privacy--storage)
 - [🤝 Contributing](#-contributing)
+- [⭐ Star History](#-star-history)
 - [📜 License](#-license)
 
 <br/>
@@ -68,7 +69,7 @@ Each step gets a screenshot with the clicked element highlighted and zoomed in. 
 | Firefox | [![Firefox Version][firefox-version-shield]][firefox-link] | [Firefox Add-ons][firefox-link]  |
 | Edge    | [![Edge Version][edge-version-shield]][edge-link]          | [Microsoft Edge Add-ons][edge-link] |
 
-Available in English, Spanish, Brazilian Portuguese, French, and German. The AI description language is set separately, so you can run Mimik in English and generate guides in Spanish, or any combination.
+Available in English, Spanish, Brazilian Portuguese, French, German, and Simplified Chinese. The AI description language is set separately, so you can run Mimik in English and generate guides in Spanish, or any combination.
 
 > \[!IMPORTANT]
 >
@@ -104,7 +105,7 @@ Need to blur something custom? The manual blur picker lets you select any DOM el
 
 Bring your own API key (OpenAI or Anthropic) and Mimik generates human-readable step descriptions like *"Click the **Submit** button to save changes"* instead of the rule-based `Click Submit`.
 
-Descriptions are generated from a lightweight DOM context (~50-100 tokens), not screenshots. Roughly 15-30x cheaper than vision models. Choose the language you want descriptions in (English, Spanish, Portuguese, French, German).
+Descriptions are generated from a lightweight DOM context (~50-100 tokens), not screenshots. Roughly 15-30x cheaper than vision models. Choose the language you want descriptions in (English, Spanish, Portuguese, French, German, Chinese).
 
 <img src="https://github.com/user-attachments/assets/3540cbd5-133f-46fd-a9b6-ffce9b4d422a" alt="AI descriptions" width="800" />
 
@@ -191,6 +192,22 @@ Two things do leave the browser, both documented in the [privacy policy](https:/
 Contributions of all kinds are welcome: bug reports, feature requests, PRs, and translations.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, project layout, and contributor guidelines.
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+## ⭐ Star History
+
+<a href="https://www.star-history.com/#westpoint-io/mimik&Timeline">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=westpoint-io/mimik&type=Timeline&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=westpoint-io/mimik&type=Timeline" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=westpoint-io/mimik&type=Timeline" width="800" />
+  </picture>
+</a>
 
 <div align="right">
 

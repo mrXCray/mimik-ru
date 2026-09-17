@@ -185,12 +185,22 @@ Extraction walks up from the target element to find:
 | Markdown | `core/export/markdown-export.ts` | Standard MD with base64 image data URLs |
 | DOCX | `core/export/docx-export.ts` | Lazy-imported, Word-compatible |
 | Video | `core/export/video-export.ts` | WebCodecs via mediabunny (lazy), mp4/H.264 with WebM/VP9 fallback |
+| GIF | `core/export/gif-export.ts` | gifenc (lazy), same frame timeline as the video; user picks Small/Medium/Large from `GIF_SPECS` |
 
 Video frames reuse `renderScreenshot`, so the auto-crop, click-target outline, annotations and
 redactions are already baked in. Each step holds 1.5s wide, eases into a crop around the target
 over 0.73s, holds 3s close, and consecutive steps cross-dissolve over 0.33s at 30fps. Capability
 probing lives in `video-support.ts`, which must stay free of mediabunny imports because both
 export UIs load it eagerly.
+
+`composeGuideFrames` owns that timeline and hands each finished frame to a sink, so video and GIF
+draw identical frames at whatever fps the caller asks for. GIF runs it at the frame rate and size in
+`GIF_SPECS` (Small/Medium/Large, 8-15fps) because it has no interframe compression: every frame of a
+zoom or dissolve is a full frame, so 30fps at 720p runs to hundreds of megabytes. Each frame gets its
+own 128-colour palette, since one global palette lets the branded cover card tint every screenshot
+behind it. Encoding yields to the event loop every few frames to keep the tab responsive; moving it
+to a Web Worker crashed the renderer with `KILLED_BAD_MESSAGE` on the first `postMessage` and is
+unexplained.
 
 ## Tech Stack
 
@@ -205,7 +215,7 @@ export UIs load it eagerly.
 | State (UI) | Zustand |
 | Storage | Dexie.js (IndexedDB) |
 | Messaging | webext-core |
-| Export | jsPDF, docx, mediabunny (WebCodecs video), client-side HTML/Markdown |
+| Export | jsPDF, docx, mediabunny (WebCodecs video), gifenc (GIF), client-side HTML/Markdown |
 | AI (optional) | Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) |
 | Event queue | p-queue (concurrency: 1) |
 | Icons | Lucide React |

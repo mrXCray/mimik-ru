@@ -1,4 +1,4 @@
-import { FileCode, FileDown, FileText, Loader2, Video } from 'lucide-react';
+import { FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { downloadBlob, downloadText, safeFilename } from '@/core/export/download';
@@ -6,6 +6,7 @@ import { exportGuideAsHTML } from '@/core/export/html-export';
 import {
   DEFAULT_EXPORT_OPTIONS,
   type ExportOptions,
+  GIF_QUALITIES,
   type ImageScale,
   loadExportOptions,
   saveExportOptions,
@@ -32,7 +33,7 @@ interface ExportPreviewModalProps {
   screenshots: Map<string, Screenshot>;
 }
 
-type ExportFormat = 'docx' | 'html' | 'markdown' | 'pdf' | 'video';
+type ExportFormat = 'docx' | 'gif' | 'html' | 'markdown' | 'pdf' | 'video';
 type PreviewMode = 'document' | 'video';
 
 export default function ExportPreviewModal({ open, onOpenChange, guide, steps, screenshots }: ExportPreviewModalProps) {
@@ -142,6 +143,16 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
       } else if (format === 'docx') {
         const { exportGuideAsDOCX } = await import('@/core/export/docx-export');
         downloadBlob(await exportGuideAsDOCX(guide, steps, screenshots, options), safeFilename(guide.title, 'docx'));
+      } else if (format === 'gif') {
+        const controller = new AbortController();
+        downloadAbort.current = controller;
+        setDownloadProgress(0);
+        const { exportGuideAsGif } = await import('@/core/export/gif-export');
+        const { blob, extension } = await exportGuideAsGif(guide, steps, screenshots, options, {
+          signal: controller.signal,
+          onProgress: (encoded, frames) => setDownloadProgress(frames > 0 ? encoded / frames : 0),
+        });
+        downloadBlob(blob, safeFilename(guide.title, extension));
       } else if (format === 'video') {
         const controller = new AbortController();
         downloadAbort.current = controller;
@@ -186,6 +197,7 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
     { key: 'docx', icon: FileText, label: i18n.t('exportMenu.docx') },
     { key: 'html', icon: FileCode, label: i18n.t('exportMenu.html') },
     { key: 'markdown', icon: FileText, label: i18n.t('exportMenu.markdown') },
+    { key: 'gif', icon: FileImage, label: i18n.t('exportMenu.gif') },
     ...(videoSupported ? [{ key: 'video' as const, icon: Video, label: i18n.t('exportMenu.video') }] : []),
   ];
 
@@ -269,9 +281,29 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
               </div>
             )}
 
+            <div className="pt-3 border-t border-border">
+              <div className="text-[12px] font-semibold text-foreground mb-2">{i18n.t('exportPreview.gifQuality')}</div>
+              <div className="flex gap-1.5">
+                {GIF_QUALITIES.map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => update({ gifQuality: value })}
+                    className={`flex-1 px-2 py-1.5 rounded-lg border text-[11px] transition-colors ${
+                      options.gifQuality === value
+                        ? 'border-accent text-accent'
+                        : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                    }`}
+                  >
+                    {i18n.t(`exportPreview.gif_${value}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="pt-3 border-t border-border space-y-1.5">
               {formats.map(({ key, icon: Icon, label }) => {
-                const cancellable = exporting === key && key === 'video';
+                const cancellable = exporting === key && (key === 'video' || key === 'gif');
                 return (
                   <Button
                     key={key}

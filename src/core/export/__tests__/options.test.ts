@@ -29,7 +29,12 @@ describe('normaliseExportOptions', () => {
       imageScale: 'small',
       stepDescriptions: DEFAULT_EXPORT_OPTIONS.stepDescriptions,
       resolution: DEFAULT_EXPORT_OPTIONS.resolution,
+      gifQuality: DEFAULT_EXPORT_OPTIONS.gifQuality,
     });
+  });
+
+  it('rejects an unknown gif quality so the encoder never gets bogus dimensions', () => {
+    expect(normaliseExportOptions({ gifQuality: 'huge' }).gifQuality).toBe(DEFAULT_EXPORT_OPTIONS.gifQuality);
   });
 
   it('rejects an unknown resolution so the encoder never gets bogus dimensions', () => {

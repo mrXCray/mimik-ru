@@ -79,6 +79,20 @@ describe('phone regex', () => {
   it('matches numbers without separators', () => {
     expect('5551234567').toMatch(regex());
   });
+
+  it('matches UK numbers', () => {
+    expect('07700 900461').toMatch(regex());
+    expect('+44 7700 900461').toMatch(regex());
+    expect('0113 496 0122').toMatch(regex());
+    expect('07700900461').toMatch(regex());
+  });
+
+  it('does not match plain reference numbers, quantities or dates', () => {
+    expect('12345678').not.toMatch(regex());
+    expect('1234 5678').not.toMatch(regex());
+    expect('Order 2024 20260401').not.toMatch(regex());
+    expect('Qty 500 1000').not.toMatch(regex());
+  });
 });
 
 describe('SSN regex', () => {

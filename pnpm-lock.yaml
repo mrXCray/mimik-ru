@@ -61,6 +61,9 @@ importers:
       fflate:
         specifier: ^0.8.2
         version: 0.8.2
+      gifenc:
+        specifier: ^1.0.3
+        version: 1.0.3
       jspdf:
         specifier: ^4.2.1
         version: 4.2.1(patch_hash=e301aed06890ed05f438774320bce683b16494cc9344453aa36d1d07f2b83e97)
@@ -2268,6 +2271,9 @@ packages:
 
   get-port-please@3.2.0:
     resolution: {integrity: sha512-I9QVvBw5U/hw3RmWpYKRumUeaDgxTPd401x364rLmWBJcOQ753eov1eTgzDqRG9bqFIfDc7gfzcQEWrUri3o1A==}
+
+  gifenc@1.0.3:
+    resolution: {integrity: sha512-xdr6AdrfGBcfzncONUOlXMBuc5wJDtOueE3c5rdG0oNgtINLD+f2iFZltrBRZYzACRbKr+mSVU/x98zv2u3jmw==}
 
   giget@2.0.0:
     resolution: {integrity: sha512-L5bGsVkxJbJgdnwyuheIunkGatUF/zssUoxxjACCseZYAVbaqdh9Tsmmlkl8vYan09H7sbvKt4pS8GqKLBrEzA==}
@@ -5704,6 +5710,8 @@ snapshots:
   get-nonce@1.0.1: {}
 
   get-port-please@3.2.0: {}
+
+  gifenc@1.0.3: {}
 
   giget@2.0.0:
     dependencies:

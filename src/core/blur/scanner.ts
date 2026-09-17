@@ -4,11 +4,13 @@ import { injectBlurStyles } from './styles';
 const BLUR_CLASS = 'mimik-blur';
 const BLUR_ATTR = 'data-mimik-blur';
 const PEEK_CLASS = 'mimik-blur-peek';
+const INPUT_BLUR = 'blur(10px)';
 const EXCLUDED_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'TEXTAREA', 'INPUT', 'SELECT', 'OPTION']);
 
 export class BlurScanner {
   private observer: MutationObserver | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private onInput: (() => void) | null = null;
   private activePresets: PresetKey[] = [];
 
   start(presets: PresetKey[]) {
@@ -32,6 +34,8 @@ export class BlurScanner {
   detach() {
     this.observer?.disconnect();
     this.observer = null;
+    if (this.onInput) document.removeEventListener('input', this.onInput, true);
+    this.onInput = null;
     if (this.debounceTimer) clearTimeout(this.debounceTimer);
   }
 
@@ -57,7 +61,7 @@ export class BlurScanner {
         if (!node.parentElement) return NodeFilter.FILTER_REJECT;
         if (EXCLUDED_TAGS.has(node.parentElement.tagName)) return NodeFilter.FILTER_REJECT;
         if (node.parentElement.closest(`[${BLUR_ATTR}]`)) return NodeFilter.FILTER_REJECT;
-        if (!node.textContent || !node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+        if (!node.textContent?.trim()) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       },
     });
@@ -106,10 +110,14 @@ export class BlurScanner {
       if (!value) continue;
       const matches = findMatches(value, patterns);
       if (matches.length > 0) {
-        input.style.setProperty('filter', 'blur(10px)', 'important');
+        input.style.setProperty('filter', INPUT_BLUR, 'important');
         input.setAttribute(BLUR_ATTR, 'input');
-        input.addEventListener('mouseenter', () => input.style.removeProperty('filter'));
-        input.addEventListener('mouseleave', () => input.style.setProperty('filter', 'blur(10px)', 'important'));
+        input.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (input.style.filter) input.style.removeProperty('filter');
+          else input.style.setProperty('filter', INPUT_BLUR, 'important');
+        });
       }
     }
   }
@@ -132,15 +140,19 @@ export class BlurScanner {
     }
   }
 
+  private scheduleScan() {
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    this.debounceTimer = setTimeout(() => this.scan(), 400);
+  }
+
   private observe() {
-    this.observer = new MutationObserver(() => {
-      if (this.debounceTimer) clearTimeout(this.debounceTimer);
-      this.debounceTimer = setTimeout(() => this.scan(), 400);
-    });
+    this.observer = new MutationObserver(() => this.scheduleScan());
     this.observer.observe(document.documentElement, {
       childList: true,
       subtree: true,
       characterData: true,
     });
+    this.onInput = () => this.scheduleScan();
+    document.addEventListener('input', this.onInput, true);
   }
 }
