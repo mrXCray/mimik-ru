@@ -1,13 +1,5 @@
-import {
-  FullscreenButton,
-  MediaPlayer,
-  MediaProvider,
-  PlayButton,
-  useMediaRemote,
-  useMediaState,
-} from '@vidstack/react';
 import { ChevronLeft, ChevronRight, Maximize, Minimize, Pause, Play } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import type { StepKind, VideoChapter } from '@/core/export/video-export';
 import { FRAME_FILL } from '@/core/export/video-support';
@@ -77,27 +69,75 @@ function StepList({
   );
 }
 
-function PlayerBody({ chapters }: { chapters: VideoChapter[] }) {
-  const remote = useMediaRemote();
-  const time = useMediaState('currentTime');
-  const duration = useMediaState('duration');
-  const rate = useMediaState('playbackRate');
-  const paused = useMediaState('paused');
-  const fullscreen = useMediaState('fullscreen');
+export default function VideoStepPlayer({ src, chapters }: VideoStepPlayerProps) {
+  const root = useRef<HTMLDivElement>(null);
+  const video = useRef<HTMLVideoElement>(null);
+  const [time, setTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [rate, setRate] = useState(1);
+  const [paused, setPaused] = useState(true);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  useEffect(() => {
+    const sync = () => setFullscreen(document.fullscreenElement === root.current);
+    document.addEventListener('fullscreenchange', sync);
+    return () => document.removeEventListener('fullscreenchange', sync);
+  }, []);
 
   const index = activeIndex(chapters, time);
-  const seekTo = (seconds: number) => remote.seek(Math.max(0, seconds + 0.01));
-  const jump = (i: number) => chapters[i] && seekTo(chapters[i].start);
+
+  const jump = useCallback(
+    (i: number) => {
+      const chapter = chapters[i];
+      if (chapter && video.current) video.current.currentTime = Math.max(0, chapter.start + 0.01);
+    },
+    [chapters],
+  );
+
+  const togglePlay = () => {
+    if (!video.current) return;
+    if (video.current.paused) void video.current.play();
+    else video.current.pause();
+  };
+
+  const cycleRate = () => {
+    if (video.current) video.current.playbackRate = RATES[(RATES.indexOf(rate) + 1) % RATES.length];
+  };
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement === root.current) void document.exitFullscreen();
+    else void root.current?.requestFullscreen();
+  };
 
   return (
-    <>
+    <div ref={root} className="flex size-full" style={{ backgroundColor: FRAME_FILL }}>
       <div className="relative min-w-0 flex-1">
-        <MediaProvider className="size-full [&_video]:size-full [&_video]:object-contain" />
+        <video
+          ref={video}
+          src={src}
+          autoPlay
+          muted
+          playsInline
+          className="size-full object-contain"
+          onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+          onPause={() => setPaused(true)}
+          onPlay={() => setPaused(false)}
+          onRateChange={(e) => setRate(e.currentTarget.playbackRate)}
+          onSeeked={(e) => setTime(e.currentTarget.currentTime)}
+          onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
+        >
+          <track kind="captions" />
+        </video>
 
         <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/85 to-transparent px-3 pb-2.5 pt-8 text-white">
-          <PlayButton className="rounded-md p-1 hover:bg-white/15">
+          <button
+            type="button"
+            onClick={togglePlay}
+            aria-label={i18n.t(paused ? 'videoPlayer.play' : 'videoPlayer.pause')}
+            className="rounded-md p-1 hover:bg-white/15"
+          >
             {paused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
-          </PlayButton>
+          </button>
 
           <button
             type="button"
@@ -126,38 +166,25 @@ function PlayerBody({ chapters }: { chapters: VideoChapter[] }) {
 
           <button
             type="button"
-            onClick={() => remote.changePlaybackRate(RATES[(RATES.indexOf(rate) + 1) % RATES.length])}
+            onClick={cycleRate}
             aria-label={i18n.t('videoPlayer.speed')}
             className="rounded-md px-1.5 py-1 font-mono text-[11px] tabular-nums hover:bg-white/15"
           >
             {rate}x
           </button>
 
-          <FullscreenButton className="rounded-md p-1 hover:bg-white/15">
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            aria-label={i18n.t(fullscreen ? 'videoPlayer.exitFullscreen' : 'videoPlayer.fullscreen')}
+            className="rounded-md p-1 hover:bg-white/15"
+          >
             {fullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
-          </FullscreenButton>
+          </button>
         </div>
       </div>
 
       {chapters.length > 0 && <StepList chapters={chapters} index={index} onJump={jump} />}
-    </>
-  );
-}
-
-export default function VideoStepPlayer({ src, chapters }: VideoStepPlayerProps) {
-  return (
-    <MediaPlayer
-      src={{ src, type: 'video/mp4' }}
-      autoPlay
-      muted
-      playsInline
-      load="eager"
-      viewType="video"
-      streamType="on-demand"
-      className="flex size-full"
-      style={{ backgroundColor: FRAME_FILL }}
-    >
-      <PlayerBody chapters={chapters} />
-    </MediaPlayer>
+    </div>
   );
 }
