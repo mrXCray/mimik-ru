@@ -404,6 +404,10 @@ videoPlayer:
   previousStep: "Étape précédente"
   nextStep: "Étape suivante"
   speed: "Vitesse de lecture"
+  play: "Lecture"
+  pause: "Pause"
+  fullscreen: "Plein écran"
+  exitFullscreen: "Quitter le plein écran"
 
 exportMenu:
   docx: DOCX

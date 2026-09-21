@@ -404,6 +404,10 @@ videoPlayer:
   previousStep: "Etapa anterior"
   nextStep: "Próxima etapa"
   speed: "Velocidade de reprodução"
+  play: "Reproduzir"
+  pause: "Pausar"
+  fullscreen: "Tela cheia"
+  exitFullscreen: "Sair da tela cheia"
 
 exportMenu:
   docx: DOCX

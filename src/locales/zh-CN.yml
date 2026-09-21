@@ -404,6 +404,10 @@ videoPlayer:
   previousStep: "上一步"
   nextStep: "下一步"
   speed: "播放速度"
+  play: "播放"
+  pause: "暂停"
+  fullscreen: "全屏"
+  exitFullscreen: "退出全屏"
 
 exportMenu:
   docx: DOCX
