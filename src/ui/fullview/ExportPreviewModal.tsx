@@ -165,8 +165,7 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
         downloadBlob(blob, safeFilename(guide.title, extension));
       } else {
         const { exportGuideAsMarkdown } = await import('@/core/export/markdown-export');
-        const md = await exportGuideAsMarkdown(guide, steps, screenshots);
-        downloadText(md, safeFilename(guide.title, 'md'), 'text/markdown');
+        downloadBlob(await exportGuideAsMarkdown(guide, steps, screenshots), safeFilename(guide.title, 'zip'));
       }
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) throw error;

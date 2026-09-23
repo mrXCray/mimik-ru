@@ -182,7 +182,7 @@ Extraction walks up from the target element to find:
 |--------|-----------|---------|
 | HTML | `core/export/html-export.ts` | Self-contained, base64 images, inline CSS |
 | PDF | `core/export/pdf-export.ts` | jsPDF, A4 portrait, auto page breaks |
-| Markdown | `core/export/markdown-export.ts` | Standard MD with base64 image data URLs |
+| Markdown | `core/export/markdown-export.ts` | Zip (fflate): `.md` + screenshots in `images/`, linked by relative path |
 | DOCX | `core/export/docx-export.ts` | Lazy-imported, Word-compatible |
 | Video | `core/export/video-export.ts` | WebCodecs via mediabunny (lazy), mp4/H.264 with WebM/VP9 fallback |
 | GIF | `core/export/gif-export.ts` | gifenc (lazy), same frame timeline as the video; user picks Small/Medium/Large from `GIF_SPECS` |

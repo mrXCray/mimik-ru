@@ -66,8 +66,7 @@ export default function ExportMenu({
         const { exportGuideAsDOCX } = await import('@/core/export/docx-export');
         downloadBlob(await exportGuideAsDOCX(guide, steps, screenshots), safeFilename(guide.title, 'docx'));
       } else if (type === 'markdown') {
-        const md = await exportGuideAsMarkdown(guide, steps, screenshots);
-        downloadText(md, safeFilename(guide.title, 'md'), 'text/markdown');
+        downloadBlob(await exportGuideAsMarkdown(guide, steps, screenshots), safeFilename(guide.title, 'zip'));
       } else if (type === 'gif') {
         const controller = new AbortController();
         abortRef.current = controller;

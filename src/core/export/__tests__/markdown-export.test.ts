@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
+
+import { strFromU8, unzipSync } from 'fflate';
 import { describe, expect, it, vi } from 'vitest';
-import { exportGuideAsMarkdown } from '@/core/export/markdown-export';
+import { buildGuideMarkdown, exportGuideAsMarkdown } from '@/core/export/markdown-export';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 
 vi.mock('@/core/screenshot/render', () => ({
@@ -44,13 +46,17 @@ function makeScreenshot(stepId: string, content = 'img'): Screenshot {
   };
 }
 
-describe('exportGuideAsMarkdown', () => {
+async function markdownOf(guide: Guide, steps: Step[], screenshots: Map<string, Screenshot>): Promise<string> {
+  return (await buildGuideMarkdown(guide, steps, screenshots)).markdown;
+}
+
+describe('buildGuideMarkdown', () => {
   it('creates valid markdown with H1 title', async () => {
     const guide = makeGuide({ title: 'My Guide' });
     const steps = [makeStep()];
     const screenshots = new Map<string, Screenshot>();
 
-    const md = await exportGuideAsMarkdown(guide, steps, screenshots);
+    const md = await markdownOf(guide, steps, screenshots);
     expect(md).toMatch(/^# My Guide\n/);
   });
 
@@ -59,7 +65,7 @@ describe('exportGuideAsMarkdown', () => {
     const steps = [makeStep(), makeStep({ id: 'step-2', index: 1, description: 'Type text' })];
     const screenshots = new Map<string, Screenshot>();
 
-    const md = await exportGuideAsMarkdown(guide, steps, screenshots);
+    const md = await markdownOf(guide, steps, screenshots);
     expect(md).toContain('export.stepsCount[2]');
     expect(md).toContain('export.createdLabel[');
   });
@@ -72,7 +78,7 @@ describe('exportGuideAsMarkdown', () => {
     ];
     const screenshots = new Map<string, Screenshot>();
 
-    const md = await exportGuideAsMarkdown(guide, steps, screenshots);
+    const md = await markdownOf(guide, steps, screenshots);
     expect(md).toContain('## export.stepLabel[01]: First action');
     expect(md).toContain('## export.stepLabel[02]: Second action');
   });
@@ -82,13 +88,13 @@ describe('exportGuideAsMarkdown', () => {
     const steps = [makeStep({ url: 'https://www.example.com/page' })];
     const screenshots = new Map<string, Screenshot>();
 
-    const md = await exportGuideAsMarkdown(guide, steps, screenshots);
+    const md = await markdownOf(guide, steps, screenshots);
     expect(md).toContain('export.sourceLabel[example.com]');
   });
 
   it('handles guide with no steps', async () => {
     const guide = makeGuide();
-    const md = await exportGuideAsMarkdown(guide, [], new Map());
+    const md = await markdownOf(guide, [], new Map());
 
     expect(md).toContain('# Test Guide');
     expect(md).toContain('export.stepsCount[0]');
@@ -100,7 +106,7 @@ describe('exportGuideAsMarkdown', () => {
     const steps = [makeStep()];
     const screenshots = new Map<string, Screenshot>();
 
-    const md = await exportGuideAsMarkdown(guide, steps, screenshots);
+    const md = await markdownOf(guide, steps, screenshots);
     expect(md).toContain('## export.stepLabel[01]: Click the button');
     expect(md).not.toContain('![');
   });
@@ -110,7 +116,7 @@ describe('exportGuideAsMarkdown', () => {
     const steps = [makeStep()];
     const screenshots = new Map<string, Screenshot>();
 
-    const md = await exportGuideAsMarkdown(guide, steps, screenshots);
+    const md = await markdownOf(guide, steps, screenshots);
     expect(md).toContain('# Test Guide\n\nReset a locked-out user password.\n\n');
   });
 
@@ -119,42 +125,41 @@ describe('exportGuideAsMarkdown', () => {
     const steps = [makeStep()];
     const screenshots = new Map<string, Screenshot>();
 
-    const md = await exportGuideAsMarkdown(guide, steps, screenshots);
+    const md = await markdownOf(guide, steps, screenshots);
     const lines = md.split('\n');
     expect(lines[1]).toBe('');
     expect(lines[2].startsWith('*')).toBe(true);
     expect(md).not.toContain('undefined');
   });
 
-  it('embeds screenshot as base64 data URL in markdown image', async () => {
-    const guide = makeGuide();
+  it('links the screenshot as a relative file instead of inlining it', async () => {
     const step = makeStep();
-    const steps = [step];
     const ss = makeScreenshot(step.id, 'pixel-data');
-    const screenshots = new Map<string, Screenshot>([[step.id, ss]]);
 
-    const md = await exportGuideAsMarkdown(guide, steps, screenshots);
-    expect(md).toContain('![export.stepLabel[01]](data:image/png;base64,');
-    const b64 = btoa('pixel-data');
-    expect(md).toContain(b64);
+    const { markdown, images } = await buildGuideMarkdown(makeGuide(), [step], new Map([[step.id, ss]]));
+
+    expect(markdown).toContain('![export.stepLabel[01]](images/step-01.png)');
+    expect(markdown).not.toContain('base64');
+    expect(images).toHaveLength(1);
+    expect(images[0].path).toBe('images/step-01.png');
   });
 
-  it('labels the data URL with the rendered mime type, not the stored one', async () => {
+  it('names the image file after the rendered mime type, not the stored one', async () => {
     const step = makeStep();
     const ss = makeScreenshot(step.id, 'pixel-data');
     ss.mimeType = 'image/jpeg';
+    ss.blob = new Blob(['pixel-data'], { type: 'image/jpeg' });
 
-    const md = await exportGuideAsMarkdown(makeGuide(), [step], new Map([[step.id, ss]]));
+    const { markdown } = await buildGuideMarkdown(makeGuide(), [step], new Map([[step.id, ss]]));
 
-    expect(md).toContain('](data:image/png;base64,');
-    expect(md).not.toContain('data:image/jpeg');
+    expect(markdown).toContain('](images/step-01.jpg)');
   });
 
   it('renders a heading block as an H2 without a step number', async () => {
     const guide = makeGuide();
     const steps = [makeStep({ id: 'block-1', blockType: 'heading', description: 'Section title', url: '' })];
 
-    const md = await exportGuideAsMarkdown(guide, steps, new Map());
+    const md = await markdownOf(guide, steps, new Map());
     expect(md).toContain('## Section title');
     expect(md).not.toContain('export.stepLabel');
   });
@@ -171,7 +176,7 @@ describe('exportGuideAsMarkdown', () => {
       }),
     ];
 
-    const md = await exportGuideAsMarkdown(guide, steps, new Map());
+    const md = await markdownOf(guide, steps, new Map());
     expect(md).toContain('> **blocks.variantWarning**');
     expect(md).toContain('> Do not skip this');
   });
@@ -180,7 +185,7 @@ describe('exportGuideAsMarkdown', () => {
     const guide = makeGuide();
     const steps = [makeStep({ id: 'block-1', blockType: 'callout', description: 'First line\nSecond line', url: '' })];
 
-    const md = await exportGuideAsMarkdown(guide, steps, new Map());
+    const md = await markdownOf(guide, steps, new Map());
     expect(md).toContain('> First line\n> Second line');
   });
 
@@ -192,7 +197,7 @@ describe('exportGuideAsMarkdown', () => {
       makeStep({ id: 'step-2', index: 2, description: 'Second action' }),
     ];
 
-    const md = await exportGuideAsMarkdown(guide, steps, new Map());
+    const md = await markdownOf(guide, steps, new Map());
     expect(md).toContain('## export.stepLabel[01]: First action');
     expect(md).toContain('## export.stepLabel[02]: Second action');
     expect(md).not.toContain('export.stepLabel[03]');
@@ -207,7 +212,33 @@ describe('exportGuideAsMarkdown', () => {
       makeStep({ id: 'step-2', index: 3, description: 'Type text' }),
     ];
 
-    const md = await exportGuideAsMarkdown(guide, steps, new Map());
+    const md = await markdownOf(guide, steps, new Map());
     expect(md).toContain('export.stepsCount[2]');
+  });
+});
+
+describe('exportGuideAsMarkdown', () => {
+  it('zips the markdown file together with its screenshots', async () => {
+    const steps = [makeStep(), makeStep({ id: 'step-2', index: 1, description: 'Type text' })];
+    const screenshots = new Map<string, Screenshot>([
+      ['step-1', makeScreenshot('step-1', 'first')],
+      ['step-2', makeScreenshot('step-2', 'second')],
+    ]);
+
+    const zip = await exportGuideAsMarkdown(makeGuide({ title: 'My Guide' }), steps, screenshots);
+    expect(zip.type).toBe('application/zip');
+
+    const files = unzipSync(new Uint8Array(await zip.arrayBuffer()));
+    expect(Object.keys(files).sort()).toEqual(['My Guide.md', 'images/step-01.png', 'images/step-02.png']);
+    expect(strFromU8(files['My Guide.md'])).toContain('](images/step-02.png)');
+    expect(strFromU8(files['images/step-01.png'])).toBe('first');
+    expect(strFromU8(files['images/step-02.png'])).toBe('second');
+  });
+
+  it('produces a zip with only the markdown file when there are no screenshots', async () => {
+    const zip = await exportGuideAsMarkdown(makeGuide(), [makeStep()], new Map());
+
+    const files = unzipSync(new Uint8Array(await zip.arrayBuffer()));
+    expect(Object.keys(files)).toEqual(['Test Guide.md']);
   });
 });

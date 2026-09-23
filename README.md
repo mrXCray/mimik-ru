@@ -163,7 +163,7 @@ Share guides in whatever format fits your workflow:
 - **PDF**: print-ready, A4 portrait with auto page breaks
 - **DOCX**: open and keep editing in Word
 - **HTML**: self-contained, share anywhere, base64-embedded images
-- **Markdown**: paste into Notion, GitHub, internal docs, wikis
+- **Markdown**: a zip with the `.md` file and screenshots in `images/`, ready for GitHub, internal docs, wikis
 
 All exports are generated client-side. Nothing touches a server.
 
