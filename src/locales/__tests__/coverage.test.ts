@@ -20,8 +20,8 @@ function localeKeys(path: string): string[] {
   return keys.sort();
 }
 
-describe('zh-CN locale coverage', () => {
+describe.each(['zh-CN', 'ru'])('%s locale coverage', (locale) => {
   it('matches the English message keys', () => {
-    expect(localeKeys('src/locales/zh-CN.yml')).toEqual(localeKeys('src/locales/en.yml'));
+    expect(localeKeys(`src/locales/${locale}.yml`)).toEqual(localeKeys('src/locales/en.yml'));
   });
 });

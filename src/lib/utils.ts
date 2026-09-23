@@ -6,6 +6,7 @@ import 'dayjs/locale/pt-br';
 import 'dayjs/locale/fr';
 import 'dayjs/locale/de';
 import 'dayjs/locale/zh-cn';
+import 'dayjs/locale/ru';
 import { twMerge } from 'tailwind-merge';
 import { i18n } from '#imports';
 
@@ -19,6 +20,7 @@ const DAYJS_LOCALE_MAP: Record<string, string> = {
   de: 'de',
   'zh-CN': 'zh-cn',
   zh: 'zh-cn',
+  ru: 'ru',
 };
 
 function getDayjsLocale(): string | undefined {
