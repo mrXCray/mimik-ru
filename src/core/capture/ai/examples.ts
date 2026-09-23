@@ -1,9 +1,10 @@
+import { resolveByLocale } from './locale';
 import type { AILanguageCode } from './prompts';
 
-interface PromptExamples {
-  steps: string[];
-  titles: string[];
-  descriptions: string[];
+export interface PromptExamples {
+  readonly steps: readonly string[];
+  readonly titles: readonly string[];
+  readonly descriptions: readonly string[];
 }
 
 const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
@@ -65,7 +66,7 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
     steps: [
       'Auf die Schaltfläche Submit klicken',
       'E-Mail-Adresse in das Feld Email eingeben',
-      '"Admin" in der Dropdown-Liste Role auswählen',
+      'In der Dropdown-Liste Role "Admin" auswählen',
       'Zur Seite Settings navigieren',
     ],
     titles: [
@@ -94,11 +95,16 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
     ],
     descriptions: [
       'Redefinir a senha de um usuário bloqueado no painel de administração do Okta. Para a equipe de suporte de TI.',
-      'Configurar quais canais do Slack enviam notificações na área de trabalho e definir um horário de não perturbe.',
+      'Configurar quais canais do Slack enviam notificações na área de trabalho e definir um horário de não perturbar.',
     ],
   },
   'zh-CN': {
-    steps: ['点击 Submit 按钮', '在 Email 字段中输入邮箱地址', '在 Role 下拉菜单中选择 "Admin"', '进入 Settings 页面'],
+    steps: [
+      '点击 Submit 按钮',
+      '在 Email 字段中输入邮箱地址',
+      '在 Role 下拉菜单中选择 "Admin" 选项',
+      '进入 Settings 页面',
+    ],
     titles: [
       '审查 claude-code 的 Pull Request',
       '配置 Slack 通知偏好',
@@ -113,14 +119,7 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
 };
 
 export function resolveExamples(locale: string): PromptExamples {
-  const exact = EXAMPLES[locale as AILanguageCode];
-  if (exact) return exact;
-
-  const base = locale.split('-')[0];
-  for (const code of Object.keys(EXAMPLES) as AILanguageCode[]) {
-    if (code.split('-')[0] === base) return EXAMPLES[code];
-  }
-  return EXAMPLES.en;
+  return resolveByLocale(EXAMPLES, locale) ?? EXAMPLES.en;
 }
 
 export function formatExamples(lines: readonly string[]): string {

@@ -60,6 +60,16 @@ describe('formatExamples', () => {
     expect(formatExamples(['Select "Admin" from the Role dropdown'])).toBe('- Select "Admin" from the Role dropdown');
   });
 
+  it('never starts or ends an example with a quote, which the description unwrapper would strip', () => {
+    for (const { code } of AI_LANGUAGES) {
+      const examples = resolveExamples(code);
+      for (const line of [...examples.steps, ...examples.titles, ...examples.descriptions]) {
+        expect(line.startsWith('"')).toBe(false);
+        expect(line.endsWith('"')).toBe(false);
+      }
+    }
+  });
+
   it('keeps every rendered example free of nested quote collisions', () => {
     for (const { code } of AI_LANGUAGES) {
       for (const line of formatExamples(resolveExamples(code).steps).split('\n')) {
