@@ -17,6 +17,7 @@ on:
     paths:
       - ".github/release-notes/*.md"
       - "INSTALL.ru.md"
+      - ".github/workflows/release-ru.yml"
   workflow_dispatch:
     inputs:
       tag:
@@ -58,7 +59,7 @@ jobs:
         if: env.TAG == ''
         run: |
           notes=$(git diff --name-only HEAD^ HEAD -- '.github/release-notes/*.md' | head -n 1)
-          # Only the install guide changed: refresh the newest release.
+          # Only the install guide or this workflow changed: rebuild the newest release.
           [ -n "$notes" ] || notes=$(ls .github/release-notes/*.md | sort -V | tail -n 1)
           echo "TAG=$(basename "$notes" .md)" >> "$GITHUB_ENV"
 
@@ -114,6 +115,8 @@ jobs:
       - name: Publish release
         run: |
           # Replace any earlier release of this tag, tag included, with a fresh one on this commit.
-          if gh release view "$TAG" >/dev/null 2>&1; then gh release delete "$TAG" --cleanup-tag --yes; fi
+          if gh release view "$TAG" >/dev/null 2>&1; then gh release delete "$TAG" --yes; fi
+          # Drop the old tag explicitly so the new release tags this commit instead of reusing it.
+          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/tags/$TAG" >/dev/null 2>&1 || true
           gh release create "$TAG" dist/* --title "Mimik $V" --notes-file release-notes.md \
             --target "$(git rev-parse HEAD)"
