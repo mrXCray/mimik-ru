@@ -6,6 +6,7 @@ import {
   getLanguageSuffix,
   getPrePromptPrefix,
   MAX_PRE_PROMPT_CHARS,
+  tidyStepDescription,
 } from '../prompts';
 
 describe('GUIDE_META_PROMPT', () => {
@@ -123,5 +124,18 @@ describe('getPrePromptPrefix', () => {
     const prefix = getPrePromptPrefix('a'.repeat(MAX_PRE_PROMPT_CHARS + 500));
     expect(prefix).toContain('a'.repeat(MAX_PRE_PROMPT_CHARS));
     expect(prefix).not.toContain('a'.repeat(MAX_PRE_PROMPT_CHARS + 1));
+  });
+});
+
+describe('tidyStepDescription', () => {
+  it('drops a copied action marker and a closing period', () => {
+    expect(tidyStepDescription('Нажмите кнопку «Сохранить» (click)')).toBe('Нажмите кнопку «Сохранить»');
+    expect(tidyStepDescription('Click the "Save" button.')).toBe('Click the "Save" button');
+    expect(tidyStepDescription('Нажмите «Далее» (click).')).toBe('Нажмите «Далее»');
+  });
+
+  it('keeps an ellipsis and ordinary brackets', () => {
+    expect(tidyStepDescription('Подождите...')).toBe('Подождите...');
+    expect(tidyStepDescription('Выберите «Отчёт (PDF)»')).toBe('Выберите «Отчёт (PDF)»');
   });
 });

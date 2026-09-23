@@ -10,6 +10,7 @@ import {
   Gauge,
   Globe,
   ImageIcon,
+  ListChecks,
   Mic,
   Shield,
   Sparkles,
@@ -111,6 +112,8 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
   const saveTimer = useRef<number | undefined>(undefined);
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>(() => defaultAiLanguage(uiLocale()));
   const [aiPrePrompt, setAiPrePrompt] = useState('');
+  const [aiStyleGuide, setAiStyleGuide] = useState(true);
+  const [showStyleRules, setShowStyleRules] = useState(false);
   const [aiMaxOutputTokens, setAiMaxOutputTokens] = useState(DEFAULT_AI_LIMITS.maxOutputTokens);
   const [aiRequestTimeoutSec, setAiRequestTimeoutSec] = useState(DEFAULT_AI_LIMITS.requestTimeoutSec);
   const [aiStopWaitSec, setAiStopWaitSec] = useState(DEFAULT_AI_LIMITS.stopWaitSec);
@@ -143,6 +146,7 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
         'aiBaseUrl',
         'aiLanguage',
         'aiPrePrompt',
+        'aiStyleGuide',
         ...AI_LIMIT_KEYS,
         'blurPresets',
         'voiceProvider',
@@ -166,6 +170,7 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
         }
         if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
         if (typeof result.aiPrePrompt === 'string') setAiPrePrompt(result.aiPrePrompt);
+        setAiStyleGuide(result.aiStyleGuide !== false);
         const limits = resolveAiLimits(result);
         setAiMaxOutputTokens(limits.maxOutputTokens);
         setAiRequestTimeoutSec(limits.requestTimeoutSec);
@@ -190,6 +195,7 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
     aiBaseUrl: baseUrl,
     aiLanguage,
     aiPrePrompt,
+    aiStyleGuide,
     aiMaxOutputTokens,
     aiRequestTimeoutSec,
     aiStopWaitSec,
@@ -483,6 +489,7 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
                         baseUrl,
                         locale: aiLanguage,
                         prePrompt: aiPrePrompt,
+                        styleGuide: aiStyleGuide,
                         maxOutputTokens: aiMaxOutputTokens,
                         requestTimeoutSec: aiRequestTimeoutSec,
                         stopWaitSec: aiStopWaitSec,
@@ -569,6 +576,53 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
                 {aiPrePrompt.length.toLocaleString()} / {MAX_PRE_PROMPT_CHARS.toLocaleString()}
               </span>
             </p>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between gap-3 py-0.5">
+              <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
+                <ListChecks size={11} className="-mt-px" />
+                {i18n.t('settings.styleGuide')}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={aiStyleGuide}
+                aria-label={i18n.t('settings.styleGuide')}
+                onClick={() => setAiStyleGuide((on) => !on)}
+                className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${
+                  aiStyleGuide ? 'bg-accent' : 'bg-border'
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                    aiStyleGuide ? 'translate-x-4' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+            <p className="mt-0.5 text-[10px] text-muted-foreground leading-relaxed">
+              {i18n.t('settings.styleGuideHint')}{' '}
+              <button
+                type="button"
+                onClick={() => setShowStyleRules((open) => !open)}
+                aria-expanded={showStyleRules}
+                className="text-accent hover:underline"
+              >
+                {i18n.t(showStyleRules ? 'settings.styleGuideHide' : 'settings.styleGuideShow')}
+              </button>
+            </p>
+            {showStyleRules && (
+              <ul className="mt-1.5 space-y-1 rounded-lg border border-border bg-secondary px-3 py-2 text-[11px] text-foreground leading-relaxed list-disc list-inside">
+                {i18n
+                  .t('settings.styleGuideRules')
+                  .split('\n')
+                  .filter(Boolean)
+                  .map((rule: string) => (
+                    <li key={rule}>{rule}</li>
+                  ))}
+              </ul>
+            )}
           </div>
 
           <div>

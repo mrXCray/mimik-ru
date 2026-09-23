@@ -3,7 +3,7 @@ import type { DOMContext } from '../dom/context';
 import { serializeDOMContext } from '../dom/context';
 import { generationLimits, loadAiLimits } from './limits';
 import { applyPromptSettings, loadPromptSettings } from './prompt-settings';
-import { STEP_DESCRIPTION_PROMPT } from './prompts';
+import { STEP_DESCRIPTION_PROMPT, tidyStepDescription } from './prompts';
 import { createModel } from './provider';
 
 export async function getAIDescription(
@@ -20,8 +20,10 @@ export async function getAIDescription(
     prompt: applyPromptSettings(
       STEP_DESCRIPTION_PROMPT.replace('{{context}}', serializeDOMContext(domContext)),
       settings,
+      { stepRules: true },
     ),
     ...generationLimits(await loadAiLimits(profileId)),
   });
-  return text.trim().replace(/^"|"$/g, '') || null;
+  const description = text.trim().replace(/^"|"$/g, '');
+  return (settings.styleGuide ? tidyStepDescription(description) : description) || null;
 }

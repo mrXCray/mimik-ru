@@ -17,6 +17,7 @@ const request = {
   baseUrl: 'http://127.0.0.1:8080/v1',
   locale: 'ru',
   prePrompt: 'Acme CRM',
+  styleGuide: true,
   maxOutputTokens: 0,
   requestTimeoutSec: 30,
   stopWaitSec: 60,
@@ -54,5 +55,17 @@ describe('testAiModel', () => {
       reason: 'failed',
       message: 'connect ECONNREFUSED 127.0.0.1:8080',
     });
+  });
+});
+
+describe('testAiModel with the built-in rules', () => {
+  it('sends the rules and drops a closing period, but keeps an ellipsis', async () => {
+    generateTextMock.mockResolvedValue({ text: 'Нажмите кнопку «Update profile».' });
+    const result = await testAiModel(request);
+    expect(generateTextMock.mock.calls[0][0].prompt).toContain('Describe exactly one action');
+    expect(result).toMatchObject({ ok: true, text: 'Нажмите кнопку «Update profile»' });
+
+    generateTextMock.mockResolvedValue({ text: 'Подождите...' });
+    expect(await testAiModel(request)).toMatchObject({ ok: true, text: 'Подождите...' });
   });
 });

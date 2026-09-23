@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { REWRITE_PRESETS } from '../prompts';
 import { buildRewritePrompt, cleanRewrite } from '../rewrite';
 
-const EN = { locale: 'en', prePrompt: '' };
+const EN = { locale: 'en', prePrompt: '', styleGuide: true };
 
 describe('cleanRewrite', () => {
   it('trims surrounding whitespace', () => {
@@ -54,7 +54,9 @@ describe('buildRewritePrompt', () => {
   });
 
   it('appends a language suffix for non-English locales', () => {
-    expect(buildRewritePrompt('Click Save', 'Make it shorter.', { locale: 'fr', prePrompt: '' })).toContain('French');
+    expect(
+      buildRewritePrompt('Click Save', 'Make it shorter.', { locale: 'fr', prePrompt: '', styleGuide: true }),
+    ).toContain('French');
   });
 
   it('appends nothing for English', () => {
@@ -75,6 +77,7 @@ describe('buildRewritePrompt', () => {
     const prompt = buildRewritePrompt('Click Save', 'Make it shorter.', {
       locale: 'en',
       prePrompt: 'Call it "Store".',
+      styleGuide: true,
     });
     expect(prompt).toContain('Call it "Store".');
     expect(prompt.indexOf('Call it')).toBeLessThan(prompt.indexOf('Click Save'));

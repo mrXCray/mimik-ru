@@ -3,7 +3,7 @@ import type { DOMContext } from '../dom/context';
 import { serializeDOMContext } from '../dom/context';
 import { type AiLimits, generationLimits } from './limits';
 import { applyPromptSettings, type PromptSettings } from './prompt-settings';
-import { STEP_DESCRIPTION_PROMPT } from './prompts';
+import { STEP_DESCRIPTION_PROMPT, tidyStepDescription } from './prompts';
 import { createModel } from './provider';
 
 export interface AiTestRequest extends PromptSettings, AiLimits {
@@ -34,6 +34,7 @@ export function samplePrompt(settings: PromptSettings): string {
   return applyPromptSettings(
     STEP_DESCRIPTION_PROMPT.replace('{{context}}', serializeDOMContext(SAMPLE_DOM_CONTEXT)),
     settings,
+    { stepRules: true },
   );
 }
 
@@ -47,7 +48,12 @@ export async function testAiModel(request: AiTestRequest): Promise<AiTestResult>
       maxRetries: 0,
       ...generationLimits(request),
     });
-    return { ok: true, text: text.trim(), ms: Date.now() - started };
+    const answer = text.trim();
+    return {
+      ok: true,
+      text: request.styleGuide ? tidyStepDescription(answer) : answer,
+      ms: Date.now() - started,
+    };
   } catch (err) {
     const ms = Date.now() - started;
     const name = err instanceof Error ? err.name : '';

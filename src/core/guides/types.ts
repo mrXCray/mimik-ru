@@ -72,6 +72,7 @@ export interface Settings {
   aiBaseUrl: string;
   aiLanguage: string;
   aiPrePrompt: string;
+  aiStyleGuide: boolean;
   aiMaxOutputTokens: number;
   aiRequestTimeoutSec: number;
   aiStopWaitSec: number;
@@ -101,6 +102,7 @@ export type SettingsKey = keyof Settings;
 /** Settings that belong to a profile rather than to the whole extension. */
 export const PROFILE_SETTING_KEYS = [
   'aiPrePrompt',
+  'aiStyleGuide',
   'aiLanguage',
   'aiMaxOutputTokens',
   'aiRequestTimeoutSec',
