@@ -3,12 +3,20 @@ import { describeAiFailure } from '@/core/capture/ai/errors';
 import { resolveAiKey } from '@/core/capture/ai/keys';
 import { AI_PROVIDERS } from '@/core/capture/ai/models';
 import type { DOMContext } from '@/core/capture/dom/context';
-import { localStorage } from '@/lib/browser-api';
+import { guideProfileId } from '@/core/profiles/guide-settings';
+import { readProfileSettings } from '@/core/profiles/profiles';
 import { logger } from '@/lib/logger';
 import { broadcastAiToPanel } from '@/lib/port';
 
-export async function generateAiDescription(domContext: DOMContext): Promise<string | undefined> {
-  const settings = await localStorage.get(['aiApiKeys', 'aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
+export async function generateAiDescription(guideId: string, domContext: DOMContext): Promise<string | undefined> {
+  const profileId = await guideProfileId(guideId);
+  const settings = await readProfileSettings(profileId, [
+    'aiApiKeys',
+    'aiApiKey',
+    'aiProvider',
+    'aiModel',
+    'aiBaseUrl',
+  ]);
   const { provider, apiKey } = resolveAiKey(settings);
   if (!apiKey) return undefined;
 
@@ -20,6 +28,7 @@ export async function generateAiDescription(domContext: DOMContext): Promise<str
       model,
       apiKey,
       settings.aiBaseUrl as string | undefined,
+      profileId,
     );
     return description || undefined;
   } catch (err) {

@@ -1,5 +1,5 @@
 import { i18n } from '#imports';
-import { localStorage } from '@/lib/browser-api';
+import { readProfileSettings } from '@/core/profiles/profiles';
 import { defaultAiLanguage, getLanguageSuffix, getPrePromptPrefix } from './prompts';
 
 export interface PromptSettings {
@@ -22,8 +22,8 @@ export function resolvePromptSettings(stored: Record<string, unknown>): PromptSe
   };
 }
 
-export async function loadPromptSettings(): Promise<PromptSettings> {
-  return resolvePromptSettings(await localStorage.get(['aiLanguage', 'aiPrePrompt']));
+export async function loadPromptSettings(profileId?: string): Promise<PromptSettings> {
+  return resolvePromptSettings(await readProfileSettings(profileId, ['aiLanguage', 'aiPrePrompt']));
 }
 
 /** Project context first, then the task, then the language rule last so it is the freshest instruction. */

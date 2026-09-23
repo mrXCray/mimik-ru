@@ -16,6 +16,8 @@ export interface Guide {
   starred: boolean;
   deletedAt: number | null;
   staging?: boolean;
+  /** Profile the guide was recorded with; its AI and export settings apply to this guide. */
+  profileId?: string;
 }
 
 export type DescriptionSource = 'narration' | 'ai' | 'heuristic' | 'manual';
@@ -87,9 +89,40 @@ export interface Settings {
   guideMeManual: boolean;
   mimikBlurMode: boolean;
   onboardingCompleted: boolean;
+  profiles: ProfileRecord[];
+  activeProfileId: string;
 }
 
 export type SettingsKey = keyof Settings;
+
+/** Settings that belong to a profile rather than to the whole extension. */
+export const PROFILE_SETTING_KEYS = [
+  'aiPrePrompt',
+  'aiLanguage',
+  'aiProvider',
+  'aiModel',
+  'aiApiKey',
+  'aiApiKeys',
+  'aiBaseUrl',
+  'targetColor',
+  'brandLogo',
+  'brandFooter',
+  'brandAttribution',
+  'exportOptions',
+] as const satisfies readonly SettingsKey[];
+
+export type ProfileSettingKey = (typeof PROFILE_SETTING_KEYS)[number];
+
+export type ProfileSettings = Partial<Pick<Settings, ProfileSettingKey>>;
+
+export interface ProfileRecord {
+  id: string;
+  /** Empty for the built-in profile, which shows a localized default name. */
+  name: string;
+  createdAt: number;
+  /** Stored values while the profile is inactive; the active profile's live values sit in the flat settings. */
+  settings: ProfileSettings;
+}
 
 export interface ElementMeta {
   tag: string;

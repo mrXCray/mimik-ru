@@ -254,4 +254,5 @@ Font: Poppins (loaded via `@fontsource/poppins`).
 - **xstate snapshot** persisted to sessionStorage so the state machine survives service worker restarts
 - **Recording notification** uses `animationend` event (not hardcoded delays) for timing
 - **Font loading** uses `@fontsource/poppins` (CSP-safe, no CDN dependency)
+- **Profiles** (`core/profiles/`): context, AI language, provider/model/keys and export branding/options are per profile (`PROFILE_SETTING_KEYS`). The active profile's values stay in the flat settings keys so ordinary readers are unchanged; inactive profiles live in `profiles` and `switchProfile` swaps them. A guide stores the `profileId` it was recorded with, and anything acting on a specific guide (AI descriptions, titles, rewrites, exports) reads through `settingsForGuide` / `readProfileSettings(profileId, …)`
 - **Cross-context sync** via BroadcastChannel — star/delete events update other views without full reload

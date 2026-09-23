@@ -55,8 +55,8 @@ export async function exportGuideAsGif(
   const { GIFEncoder, applyPalette, quantize } = await import('gifenc');
 
   const [brand, options] = await Promise.all([
-    loadBranding(),
-    exportOptions ? Promise.resolve(exportOptions) : loadExportOptions(),
+    loadBranding(guide.profileId),
+    exportOptions ? Promise.resolve(exportOptions) : loadExportOptions(guide.profileId),
   ]);
 
   const spec = GIF_SPECS[options.gifQuality] ?? GIF_SPECS.medium;

@@ -34,6 +34,8 @@ import { AI_LANGUAGES, type AILanguageCode, defaultAiLanguage, MAX_PRE_PROMPT_CH
 import { resolveVoiceApiKey } from '@/core/capture/voice/api-key';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { type BrandLogo, defaultFooterLine, makeBrandLogo } from '@/core/export/branding';
+import { PROFILE_SETTING_KEYS, type ProfileSettings } from '@/core/guides/types';
+import { type ProfilesState, writeProfileSettings } from '@/core/profiles/profiles';
 import { DEFAULT_TARGET_COLOR, TARGET_COLORS } from '@/core/screenshot/types';
 import { localStorage } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
@@ -44,6 +46,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import ColorPicker from '@/ui/shared/ColorPicker';
 import { KeyStatusNote, KeyWarningNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
+import { ProfileManager, useProfiles } from '@/ui/shared/profiles';
 import { changedSettings, type SettingsSnapshot } from '@/ui/shared/settings-autosave';
 
 interface SettingsViewProps {
@@ -59,7 +62,15 @@ const FOOTER_PRESETS = () => [
   i18n.t('settings.footerPresetNoDistribute'),
 ];
 
-export default function SettingsView({ onBack }: SettingsViewProps) {
+export default function SettingsView(props: SettingsViewProps) {
+  const profiles = useProfiles();
+  if (!profiles) return null;
+  // Remount per profile so every field reloads from the newly active profile.
+  return <SettingsBody key={profiles.activeId} {...props} profiles={profiles} />;
+}
+
+function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: ProfilesState }) {
+  const profileId = profiles.activeId;
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
@@ -161,13 +172,21 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     pending.current = {};
     if (Object.keys(patch).length === 0) return;
     try {
-      await localStorage.set(patch);
+      const profilePatch: Record<string, unknown> = {};
+      const globalPatch: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(patch)) {
+        if ((PROFILE_SETTING_KEYS as readonly string[]).includes(key)) profilePatch[key] = value;
+        else globalPatch[key] = value;
+      }
+      // Edits land in the profile they were made in, even if another profile became active meanwhile.
+      if (Object.keys(profilePatch).length) await writeProfileSettings(profileId, profilePatch as ProfileSettings);
+      if (Object.keys(globalPatch).length) await localStorage.set(globalPatch);
       setSaved(true);
     } catch (err) {
       logger.error('Settings autosave failed', err);
       setSaved(false);
     }
-  }, []);
+  }, [profileId]);
 
   useEffect(() => {
     if (!loaded) return;
@@ -278,6 +297,8 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
       </div>
 
       <div className="flex-1 px-3 py-4 space-y-3">
+        <ProfileManager state={profiles} beforeSwitch={flush} />
+
         <div className="border border-border rounded-[10px] p-3.5 space-y-3">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">

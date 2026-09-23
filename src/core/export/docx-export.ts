@@ -463,9 +463,9 @@ export async function exportGuideAsDOCX(
   screenshots: Map<string, Screenshot>,
   options?: ExportOptions,
 ): Promise<Blob> {
-  const opts = options ?? (await loadExportOptions());
+  const opts = options ?? (await loadExportOptions(guide.profileId));
   const domain = extractDomain(steps);
-  const brand = await loadBranding();
+  const brand = await loadBranding(guide.profileId);
 
   const children: Array<Paragraph | Table> = opts.cover
     ? buildCover(guide, steps, domain, brand)

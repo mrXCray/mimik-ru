@@ -19,7 +19,7 @@ function notifyGuidesChanged(event: GuideChangeEvent) {
   guidesChannel.postMessage(event);
 }
 
-export async function createGuide(guideId: string, staging = false): Promise<Guide> {
+export async function createGuide(guideId: string, staging = false, profileId?: string): Promise<Guide> {
   const guide: Guide = {
     id: guideId,
     title: i18n.t('fullview.untitledGuide'),
@@ -29,6 +29,7 @@ export async function createGuide(guideId: string, staging = false): Promise<Gui
     starred: false,
     deletedAt: null,
     ...(staging ? { staging: true } : {}),
+    ...(profileId ? { profileId } : {}),
   };
   await db.guides.add(guide);
   return guide;

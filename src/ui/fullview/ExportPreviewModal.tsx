@@ -52,8 +52,8 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
   const [videoRequested, setVideoRequested] = useState(false);
 
   useEffect(() => {
-    if (open) loadExportOptions().then(setOptions);
-  }, [open]);
+    if (open) loadExportOptions(guide.profileId).then(setOptions);
+  }, [open, guide.profileId]);
 
   useEffect(() => {
     let active = true;
@@ -129,7 +129,7 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
   const update = (patch: Partial<ExportOptions>) => {
     const next = { ...options, ...patch };
     setOptions(next);
-    void saveExportOptions(next);
+    void saveExportOptions(next, guide.profileId);
   };
 
   async function handleExport(format: ExportFormat) {

@@ -30,6 +30,8 @@ vi.mock('@/core/guides/service', () => ({
 
 vi.mock('@/lib/browser-api', () => ({ localStorage: { get: localStorageGetMock } }));
 
+vi.mock('@/core/profiles/guide-settings', () => ({ guideProfileId: async () => undefined }));
+
 import { AI_PROVIDERS } from '@/core/capture/ai/models';
 import { generateDescriptionOnDemand, generateGuideMetaOnStop } from '../guide-meta';
 
@@ -102,6 +104,7 @@ describe('background guide-meta', () => {
         AI_PROVIDERS.anthropic.defaultModel,
         'key',
         undefined,
+        undefined,
       );
     });
 
@@ -115,6 +118,7 @@ describe('background guide-meta', () => {
         'openai',
         AI_PROVIDERS.openai.defaultModel,
         'key',
+        undefined,
         undefined,
       );
     });

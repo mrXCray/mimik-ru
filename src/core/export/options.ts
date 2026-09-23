@@ -1,4 +1,4 @@
-import { localStorage } from '@/lib/browser-api';
+import { readProfileSettings, writeProfileSettings } from '@/core/profiles/profiles';
 
 export type ImageScale = 'small' | 'medium' | 'large';
 
@@ -67,11 +67,11 @@ export function normaliseExportOptions(value: unknown): ExportOptions {
   };
 }
 
-export async function loadExportOptions(): Promise<ExportOptions> {
-  const stored = await localStorage.get(['exportOptions']);
+export async function loadExportOptions(profileId?: string): Promise<ExportOptions> {
+  const stored = await readProfileSettings(profileId, ['exportOptions']);
   return normaliseExportOptions(stored.exportOptions);
 }
 
-export async function saveExportOptions(options: ExportOptions): Promise<void> {
-  await localStorage.set({ exportOptions: options });
+export async function saveExportOptions(options: ExportOptions, profileId?: string): Promise<void> {
+  await writeProfileSettings(profileId, { exportOptions: options });
 }

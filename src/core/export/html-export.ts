@@ -73,8 +73,8 @@ export async function exportGuideAsHTML(
   screenshots: Map<string, Screenshot>,
   options?: ExportOptions,
 ): Promise<string> {
-  const opts = options ?? (await loadExportOptions());
-  const brand = await loadBranding();
+  const opts = options ?? (await loadExportOptions(guide.profileId));
+  const brand = await loadBranding(guide.profileId);
   const accent = brand.accent;
   const imgWidthPct = Math.round(IMAGE_SCALE_FACTORS[opts.imageScale] * 100);
   const frameRatio = dominantRatio(screenshots);

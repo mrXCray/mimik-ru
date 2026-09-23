@@ -564,3 +564,15 @@ stepSource:
   basic: "Básica"
   edited: "Editada"
   hint: "De onde veio esta descrição"
+
+profiles:
+  label: "Perfil"
+  defaultName: "Padrão"
+  new: "Novo perfil"
+  create: "Criar perfil"
+  rename: "Renomear perfil"
+  delete: "Excluir perfil"
+  namePlaceholder: "Nome do perfil"
+  deleteTitle: "Excluir o perfil \"$1\"?"
+  deleteMessage: "As configurações de IA, contexto e exportação dele serão excluídas. Os guias gravados com ele continuam e usam o perfil ativo."
+  hint: "Contexto, idioma e configurações de IA e exportação ficam salvos por perfil. Novas gravações usam o perfil escolhido e cada guia mantém o seu."

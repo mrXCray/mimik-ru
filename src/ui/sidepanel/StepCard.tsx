@@ -64,6 +64,7 @@ export default function StepCard({
       onDescriptionChange?.(step.id, next);
     },
     !readOnly && !step.aiPending && Boolean(hasApiKey),
+    step.guideId,
   );
 
   const handleDelete = () => {

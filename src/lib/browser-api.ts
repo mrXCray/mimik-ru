@@ -108,6 +108,7 @@ export const localStorage = {
   get: <K extends SettingsKey>(keys: readonly K[]) =>
     browser.storage.local.get(keys as unknown as K) as Promise<Partial<Pick<Settings, K>>>,
   set: (items: Partial<Settings>) => browser.storage.local.set(items),
+  remove: (keys: readonly SettingsKey[]) => browser.storage.local.remove([...keys]),
 };
 
 export function setSidePanelBehavior(openOnActionClick: boolean): void {

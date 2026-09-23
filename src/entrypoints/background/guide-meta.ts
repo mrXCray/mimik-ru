@@ -10,7 +10,8 @@ import {
   updateGuideDescription,
   updateGuideTitle,
 } from '@/core/guides/service';
-import { localStorage } from '@/lib/browser-api';
+import { guideProfileId } from '@/core/profiles/guide-settings';
+import { readProfileSettings } from '@/core/profiles/profiles';
 import { logger } from '@/lib/logger';
 import type { GenerateGuideDescriptionResponse, GuideDescriptionError } from '@/lib/messaging';
 import { drainDescriptions } from './description-queue';
@@ -26,11 +27,19 @@ type GuideMetaInputs =
       model: string;
       apiKey: string;
       baseUrl?: string;
+      profileId?: string;
     }
   | { ok: false; reason: ResolveFailure };
 
 async function resolveGuideMetaInputs(guideId: string): Promise<GuideMetaInputs> {
-  const settings = await localStorage.get(['aiApiKeys', 'aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
+  const profileId = await guideProfileId(guideId);
+  const settings = await readProfileSettings(profileId, [
+    'aiApiKeys',
+    'aiApiKey',
+    'aiProvider',
+    'aiModel',
+    'aiBaseUrl',
+  ]);
   const { provider, apiKey } = resolveAiKey(settings);
   if (!apiKey) return { ok: false, reason: 'no-api-key' };
 
@@ -45,6 +54,7 @@ async function resolveGuideMetaInputs(guideId: string): Promise<GuideMetaInputs>
     model: (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel,
     apiKey,
     baseUrl: settings.aiBaseUrl as string | undefined,
+    profileId,
   };
 }
 
@@ -72,7 +82,14 @@ export async function generateGuideMetaOnStop(guideId: string) {
       return;
     }
 
-    const meta = await generateGuideMeta(inputs.steps, inputs.provider, inputs.model, inputs.apiKey, inputs.baseUrl);
+    const meta = await generateGuideMeta(
+      inputs.steps,
+      inputs.provider,
+      inputs.model,
+      inputs.apiKey,
+      inputs.baseUrl,
+      inputs.profileId,
+    );
     if (!meta) {
       await applyFallbackTitle(guideId);
       return;
@@ -96,7 +113,14 @@ export async function generateDescriptionOnDemand(guideId: string): Promise<Gene
     const inputs = await resolveGuideMetaInputs(guideId);
     if (!inputs.ok) return { error: inputs.reason };
 
-    const meta = await generateGuideMeta(inputs.steps, inputs.provider, inputs.model, inputs.apiKey, inputs.baseUrl);
+    const meta = await generateGuideMeta(
+      inputs.steps,
+      inputs.provider,
+      inputs.model,
+      inputs.apiKey,
+      inputs.baseUrl,
+      inputs.profileId,
+    );
     if (!meta?.description) return { error: 'generation-failed' };
 
     await updateGuideDescription(guideId, meta.description);

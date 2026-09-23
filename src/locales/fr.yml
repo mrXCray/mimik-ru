@@ -564,3 +564,15 @@ stepSource:
   basic: "Simple"
   edited: "Modifiée"
   hint: "D’où vient cette description"
+
+profiles:
+  label: "Profil"
+  defaultName: "Par défaut"
+  new: "Nouveau profil"
+  create: "Créer le profil"
+  rename: "Renommer le profil"
+  delete: "Supprimer le profil"
+  namePlaceholder: "Nom du profil"
+  deleteTitle: "Supprimer le profil « $1 » ?"
+  deleteMessage: "Ses réglages d'IA, de contexte et d'export seront supprimés. Les guides enregistrés avec lui restent et utilisent le profil actif."
+  hint: "Le contexte, la langue et les réglages d'IA et d'export sont enregistrés par profil. Les nouveaux enregistrements utilisent le profil choisi et chaque guide garde le sien."

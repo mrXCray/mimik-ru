@@ -1,5 +1,5 @@
 import { generateText } from 'ai';
-import { localStorage } from '@/lib/browser-api';
+import { settingsForGuide } from '@/core/profiles/guide-settings';
 import { logger } from '@/lib/logger';
 import type { RewriteSelectionResponse } from '@/lib/messaging';
 import { resolveAiKey } from './keys';
@@ -23,8 +23,12 @@ export function buildRewritePrompt(text: string, instruction: string, settings: 
   );
 }
 
-export async function rewriteSelection(text: string, instruction: string): Promise<RewriteSelectionResponse> {
-  const settings = await localStorage.get([
+export async function rewriteSelection(
+  text: string,
+  instruction: string,
+  guideId?: string,
+): Promise<RewriteSelectionResponse> {
+  const settings = await settingsForGuide(guideId, [
     'aiApiKeys',
     'aiApiKey',
     'aiProvider',

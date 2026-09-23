@@ -21,6 +21,7 @@ import { connectToBackground, type PanelAiUpdate, type PanelVoiceUpdate } from '
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
 import { TooltipProvider } from '@/ui/components/ui/tooltip';
+import { RecordingProfilePicker } from '@/ui/shared/profiles';
 import SettingsView from '@/ui/shared/SettingsView';
 import UpdateNotice from '@/ui/shared/UpdateNotice';
 import GuideEditor from './GuideEditor';
@@ -286,6 +287,8 @@ export default function App() {
             <h3 className="text-base font-medium text-foreground">{i18n.t('sidepanel.heroTitle')}</h3>
             <p className="text-xs mt-1 text-muted-foreground">{i18n.t('sidepanel.heroSubtitle')}</p>
           </div>
+
+          <RecordingProfilePicker />
 
           {isRecordableUrl(activeUrl) ? (
             <Button

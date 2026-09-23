@@ -564,3 +564,15 @@ stepSource:
   basic: "基础"
   edited: "已编辑"
   hint: "这条描述的来源"
+
+profiles:
+  label: "配置档案"
+  defaultName: "默认"
+  new: "新建配置档案"
+  create: "创建配置档案"
+  rename: "重命名配置档案"
+  delete: "删除配置档案"
+  namePlaceholder: "配置档案名称"
+  deleteTitle: "删除配置档案“$1”？"
+  deleteMessage: "其 AI、背景和导出设置将被删除。用它录制的指南会保留，并改用当前配置档案。"
+  hint: "背景、语言、AI 和导出设置按配置档案分别保存。新录制使用所选配置档案，每份指南保留录制时的配置档案。"

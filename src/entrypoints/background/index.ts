@@ -12,6 +12,8 @@ import {
   mergeGuideInto,
 } from '@/core/guides/service';
 import type { Step } from '@/core/guides/types';
+import { guideProfileId } from '@/core/profiles/guide-settings';
+import { getActiveProfileId } from '@/core/profiles/profiles';
 import {
   getActiveTab,
   localStorage,
@@ -127,7 +129,9 @@ export default defineBackground(() => {
     });
     const guideId = actor.getSnapshot().context.currentGuideId!;
 
-    await createGuide(guideId, data.insertTargetGuideId !== undefined);
+    const profileId =
+      (await guideProfileId(data.insertTargetGuideId)) ?? (await getActiveProfileId().catch(() => undefined));
+    await createGuide(guideId, data.insertTargetGuideId !== undefined, profileId);
 
     const activeTab = await getActiveTab();
     if (activeTab?.id) await showNotificationOnTab(activeTab.id);
@@ -186,7 +190,7 @@ export default defineBackground(() => {
 
   onMessage('validateApiKey', ({ data }) => validateApiKey(data.provider, data.apiKey, data.baseUrl, data.model));
 
-  onMessage('rewriteSelection', ({ data }) => rewriteSelection(data.text, data.instruction));
+  onMessage('rewriteSelection', ({ data }) => rewriteSelection(data.text, data.instruction, data.guideId));
 
   onMessage('captureStep', async ({ data }) => {
     await waitUntilReady();

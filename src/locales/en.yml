@@ -564,3 +564,15 @@ stepSource:
   basic: "Basic"
   edited: "Edited"
   hint: "Where this description came from"
+
+profiles:
+  label: "Profile"
+  defaultName: "Default"
+  new: "New profile"
+  create: "Create profile"
+  rename: "Rename profile"
+  delete: "Delete profile"
+  namePlaceholder: "Profile name"
+  deleteTitle: "Delete profile \"$1\"?"
+  deleteMessage: "Its AI, context and export settings will be deleted. Guides recorded with it keep working and use the active profile instead."
+  hint: "Context, language, AI and export settings are stored per profile. New recordings use the selected profile, and each guide keeps the profile it was recorded with."

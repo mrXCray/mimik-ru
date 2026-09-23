@@ -565,3 +565,15 @@ stepSource:
   basic: "Einfach"
   edited: "Bearbeitet"
   hint: "Woher diese Beschreibung kommt"
+
+profiles:
+  label: "Profil"
+  defaultName: "Standard"
+  new: "Neues Profil"
+  create: "Profil erstellen"
+  rename: "Profil umbenennen"
+  delete: "Profil löschen"
+  namePlaceholder: "Profilname"
+  deleteTitle: "Profil „$1“ löschen?"
+  deleteMessage: "Seine KI-, Kontext- und Exporteinstellungen werden gelöscht. Damit aufgenommene Anleitungen bleiben erhalten und nutzen das aktive Profil."
+  hint: "Kontext, Sprache, KI- und Exporteinstellungen werden pro Profil gespeichert. Neue Aufnahmen nutzen das gewählte Profil, jede Anleitung behält ihr Aufnahmeprofil."

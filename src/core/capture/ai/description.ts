@@ -11,8 +11,9 @@ export async function getAIDescription(
   model: string,
   apiKey: string,
   baseUrl?: string,
+  profileId?: string,
 ): Promise<string | null> {
-  const settings = await loadPromptSettings();
+  const settings = await loadPromptSettings(profileId);
   const { text } = await generateText({
     model: createModel(provider, model, apiKey, baseUrl),
     prompt: applyPromptSettings(

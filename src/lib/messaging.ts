@@ -100,6 +100,8 @@ export type RewriteError = 'no-api-key' | 'generation-failed';
 export interface RewriteSelectionData {
   text: string;
   instruction: string;
+  /** Guide the text belongs to, so its profile's AI settings and context apply. */
+  guideId?: string;
 }
 
 export interface RewriteSelectionResponse {

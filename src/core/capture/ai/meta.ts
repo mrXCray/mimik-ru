@@ -59,11 +59,15 @@ export async function generateGuideMeta(
   model: string,
   apiKey: string,
   baseUrl?: string,
+  profileId?: string,
 ): Promise<GuideMeta | null> {
   if (steps.length === 0) return null;
 
   const formatted = steps.map((s, i) => `${i + 1}. [${s.url}] ${s.description}`).join('\n');
-  const prompt = applyPromptSettings(GUIDE_META_PROMPT.replace('{{steps}}', formatted), await loadPromptSettings());
+  const prompt = applyPromptSettings(
+    GUIDE_META_PROMPT.replace('{{steps}}', formatted),
+    await loadPromptSettings(profileId),
+  );
   const aiModel = createModel(provider, model, apiKey, baseUrl);
 
   try {

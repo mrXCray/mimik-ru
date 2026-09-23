@@ -122,12 +122,12 @@ export async function exportGuideAsPDF(
   screenshots: Map<string, Screenshot>,
   options?: ExportOptions,
 ): Promise<Blob> {
-  const opts = options ?? (await loadExportOptions());
+  const opts = options ?? (await loadExportOptions(guide.profileId));
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const actions = actionSteps(steps);
   const numbers = stepNumbers(steps);
   const domain = extractDomain(steps);
-  const brand = await loadBranding();
+  const brand = await loadBranding(guide.profileId);
   const accent = hexToRgb(brand.accent) ?? [79, 70, 229];
   const logo = brand.logo ? fitLogo(brand.logo, LOGO_MAX_W, LOGO_MAX_H) : null;
   const headLogo = !opts.cover && brand.logo ? fitLogo(brand.logo, HEAD_LOGO_W, HEAD_LOGO_H) : null;

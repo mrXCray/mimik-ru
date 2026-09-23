@@ -835,8 +835,8 @@ export async function exportGuideAsVideo(
   );
 
   const [brand, options] = await Promise.all([
-    loadBranding(),
-    exportOptions ? Promise.resolve(exportOptions) : loadExportOptions(),
+    loadBranding(guide.profileId),
+    exportOptions ? Promise.resolve(exportOptions) : loadExportOptions(guide.profileId),
   ]);
 
   const requested = RESOLUTION_SPECS[options.resolution] ? options.resolution : '720p';

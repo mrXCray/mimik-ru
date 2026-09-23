@@ -38,7 +38,7 @@ function readSpan(value: string, start: number, end: number): Span | null {
   return { start, end, lead, core, trail: raw.slice(lead.length + core.length) };
 }
 
-export function useAskAi(value: string, onReplace: (next: string) => void, enabled = true) {
+export function useAskAi(value: string, onReplace: (next: string) => void, enabled = true, guideId?: string) {
   const [span, setSpan] = useState<Span | null>(null);
   const [active, setActive] = useState<Span | null>(null);
   const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(null);
@@ -120,7 +120,7 @@ export function useAskAi(value: string, onReplace: (next: string) => void, enabl
       setBusy(true);
       setError(null);
       try {
-        const response = await sendMessage('rewriteSelection', { text: target.core, instruction: prompt });
+        const response = await sendMessage('rewriteSelection', { text: target.core, instruction: prompt, guideId });
         if (response.error) {
           setError(rewriteErrorMessage(response.error));
           return;
@@ -132,7 +132,7 @@ export function useAskAi(value: string, onReplace: (next: string) => void, enabl
         setBusy(false);
       }
     },
-    [busy],
+    [busy, guideId],
   );
 
   const replace = useCallback(() => {
