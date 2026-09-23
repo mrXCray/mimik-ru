@@ -4,6 +4,7 @@ import { logger } from '@/lib/logger';
 import { formatExamples, resolveExamples } from './examples';
 import { GUIDE_META_JSON_SUFFIX, GUIDE_META_PROMPT, getLanguageSuffix } from './prompts';
 import { createModel } from './provider';
+import { unwrapQuotes } from './text';
 
 export interface GuideMeta {
   title: string;
@@ -25,12 +26,11 @@ const guideMetaSchema = jsonSchema<{ title: string; description?: string | null 
 });
 
 function toGuideMeta(rawTitle: unknown, rawDescription: unknown): GuideMeta | null {
-  let title = typeof rawTitle === 'string' ? rawTitle.trim().replace(/^"|"$/g, '') : '';
+  let title = typeof rawTitle === 'string' ? unwrapQuotes(rawTitle) : '';
   if (!title) return null;
   if (title.length > MAX_TITLE_LENGTH) title = `${title.slice(0, MAX_TITLE_LENGTH - 3)}...`;
 
-  const description =
-    typeof rawDescription === 'string' ? rawDescription.trim().replace(/^"|"$/g, '') || undefined : undefined;
+  const description = typeof rawDescription === 'string' ? unwrapQuotes(rawDescription) || undefined : undefined;
   return { title, description };
 }
 

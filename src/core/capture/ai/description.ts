@@ -5,6 +5,7 @@ import { serializeDOMContext } from '../dom/context';
 import { formatExamples, resolveExamples } from './examples';
 import { getLanguageSuffix, STEP_DESCRIPTION_PROMPT } from './prompts';
 import { createModel } from './provider';
+import { unwrapQuotes } from './text';
 
 export async function getAIDescription(
   domContext: DOMContext,
@@ -25,5 +26,5 @@ export async function getAIDescription(
     prompt: prompt + getLanguageSuffix(locale),
     maxOutputTokens: 50,
   });
-  return text.trim().replace(/^"|"$/g, '') || null;
+  return unwrapQuotes(text) || null;
 }
