@@ -107,6 +107,11 @@ settings:
   showKey: Schlüssel anzeigen
   hideKey: Schlüssel verbergen
   aiLanguage: Sprache der Beschreibungen
+  prePrompt: "Projektkontext"
+  prePromptLoad: "Aus .md laden"
+  prePromptClear: "Projektkontext entfernen"
+  prePromptPlaceholder: "Beschreibe Produkt, Zielgruppe, Begriffe und Schreibstil. Markdown ist erlaubt."
+  prePromptHint: "Wird bei jeder KI-Anfrage mitgesendet: Schrittbeschreibungen, Titel und Umformulierungen."
   voiceNarration: Sprachkommentar
   voiceUsingAiKey: "Es ist kein Sprach-Schlüssel gesetzt, daher nutzt Mimik den OpenAI-Schlüssel aus den KI-Beschreibungen oben."
   aiNoKey: "Kein API-Schlüssel gesetzt, daher verwenden Schritte einfache regelbasierte Beschreibungen."

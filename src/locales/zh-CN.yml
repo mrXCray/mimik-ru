@@ -95,6 +95,11 @@ settings:
   showKey: 显示密钥
   hideKey: 隐藏密钥
   aiLanguage: 描述语言
+  prePrompt: "项目背景"
+  prePromptLoad: "加载 .md"
+  prePromptClear: "移除项目背景"
+  prePromptPlaceholder: "描述产品、受众、术语和写作风格，可以使用 Markdown。"
+  prePromptHint: "每次 AI 请求都会附带：步骤描述、标题和改写。"
   voiceNarration: 语音讲解
   voiceUsingAiKey: "未设置语音密钥，因此 Mimik 会使用上方 AI 描述中的 OpenAI 密钥。"
   aiNoKey: "未设置 API 密钥，步骤将使用普通的规则描述。"

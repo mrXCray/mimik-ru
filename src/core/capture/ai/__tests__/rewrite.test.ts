@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { REWRITE_PRESETS } from '../prompts';
 import { buildRewritePrompt, cleanRewrite } from '../rewrite';
 
+const EN = { locale: 'en', prePrompt: '' };
+
 describe('cleanRewrite', () => {
   it('trims surrounding whitespace', () => {
     expect(cleanRewrite('  Click the Submit button  ')).toBe('Click the Submit button');
@@ -34,7 +36,7 @@ describe('cleanRewrite', () => {
 
 describe('buildRewritePrompt', () => {
   it('substitutes the selected text and the instruction', () => {
-    const prompt = buildRewritePrompt('Click Save', 'Make it shorter.', 'en');
+    const prompt = buildRewritePrompt('Click Save', 'Make it shorter.', EN);
     expect(prompt).toContain('Click Save');
     expect(prompt).toContain('Make it shorter.');
     expect(prompt).not.toContain('{{text}}');
@@ -42,30 +44,39 @@ describe('buildRewritePrompt', () => {
   });
 
   it('does not interpret dollar patterns in the selected text', () => {
-    const prompt = buildRewritePrompt('Enter $& in the Amount field', 'Fix grammar.', 'en');
+    const prompt = buildRewritePrompt('Enter $& in the Amount field', 'Fix grammar.', EN);
     expect(prompt).toContain('Enter $& in the Amount field');
   });
 
   it('does not interpret dollar patterns in the instruction', () => {
-    const prompt = buildRewritePrompt('Click Save', 'Replace $1 with $`', 'en');
+    const prompt = buildRewritePrompt('Click Save', 'Replace $1 with $`', EN);
     expect(prompt).toContain('Replace $1 with $`');
   });
 
   it('appends a language suffix for non-English locales', () => {
-    expect(buildRewritePrompt('Click Save', 'Make it shorter.', 'fr')).toContain('French');
+    expect(buildRewritePrompt('Click Save', 'Make it shorter.', { locale: 'fr', prePrompt: '' })).toContain('French');
   });
 
   it('appends nothing for English', () => {
-    expect(buildRewritePrompt('Click Save', 'Make it shorter.', 'en')).not.toContain('IMPORTANT');
+    expect(buildRewritePrompt('Click Save', 'Make it shorter.', EN)).not.toContain('IMPORTANT');
   });
 
   it('forbids inventing UI elements', () => {
-    expect(buildRewritePrompt('Click Save', 'Expand it.', 'en')).toMatch(/never introduce a UI element/i);
+    expect(buildRewritePrompt('Click Save', 'Expand it.', EN)).toMatch(/never introduce a UI element/i);
   });
 
   it('works with every preset instruction', () => {
     for (const instruction of Object.values(REWRITE_PRESETS)) {
-      expect(buildRewritePrompt('Click Save', instruction, 'en')).toContain(instruction);
+      expect(buildRewritePrompt('Click Save', instruction, EN)).toContain(instruction);
     }
+  });
+
+  it('puts the project context before the task', () => {
+    const prompt = buildRewritePrompt('Click Save', 'Make it shorter.', {
+      locale: 'en',
+      prePrompt: 'Call it "Store".',
+    });
+    expect(prompt).toContain('Call it "Store".');
+    expect(prompt.indexOf('Call it')).toBeLessThan(prompt.indexOf('Click Save'));
   });
 });

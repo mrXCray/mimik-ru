@@ -95,6 +95,11 @@ settings:
   showKey: Afficher la clé
   hideKey: Masquer la clé
   aiLanguage: Langue des descriptions
+  prePrompt: "Contexte du projet"
+  prePromptLoad: "Charger un .md"
+  prePromptClear: "Supprimer le contexte du projet"
+  prePromptPlaceholder: "Décrivez le produit, le public, les termes et le style d'écriture. Le Markdown est accepté."
+  prePromptHint: "Envoyé avec chaque requête IA : descriptions d'étapes, titres et reformulations."
   voiceNarration: "Narration vocale"
   voiceUsingAiKey: "Aucune clé vocale n'est définie : Mimik utilise la clé OpenAI des descriptions IA ci-dessus."
   aiNoKey: "Aucune clé API définie, les étapes utiliseront donc des descriptions simples basées sur des règles."

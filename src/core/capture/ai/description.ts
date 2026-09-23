@@ -1,8 +1,8 @@
 import { generateText } from 'ai';
-import { localStorage } from '@/lib/browser-api';
 import type { DOMContext } from '../dom/context';
 import { serializeDOMContext } from '../dom/context';
-import { getLanguageSuffix, STEP_DESCRIPTION_PROMPT } from './prompts';
+import { applyPromptSettings, loadPromptSettings } from './prompt-settings';
+import { STEP_DESCRIPTION_PROMPT } from './prompts';
 import { createModel } from './provider';
 
 export async function getAIDescription(
@@ -12,11 +12,13 @@ export async function getAIDescription(
   apiKey: string,
   baseUrl?: string,
 ): Promise<string | null> {
-  const settings = await localStorage.get(['aiLanguage']);
-  const locale = (settings.aiLanguage as string) || 'en';
+  const settings = await loadPromptSettings();
   const { text } = await generateText({
     model: createModel(provider, model, apiKey, baseUrl),
-    prompt: STEP_DESCRIPTION_PROMPT.replace('{{context}}', serializeDOMContext(domContext)) + getLanguageSuffix(locale),
+    prompt: applyPromptSettings(
+      STEP_DESCRIPTION_PROMPT.replace('{{context}}', serializeDOMContext(domContext)),
+      settings,
+    ),
     maxOutputTokens: 50,
   });
   return text.trim().replace(/^"|"$/g, '') || null;

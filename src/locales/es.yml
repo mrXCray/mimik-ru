@@ -95,6 +95,11 @@ settings:
   showKey: Mostrar clave
   hideKey: Ocultar clave
   aiLanguage: Idioma de descripciones
+  prePrompt: "Contexto del proyecto"
+  prePromptLoad: "Cargar .md"
+  prePromptClear: "Quitar contexto del proyecto"
+  prePromptPlaceholder: "Describe el producto, el público, los términos y el estilo de redacción. Se admite Markdown."
+  prePromptHint: "Se envía con cada solicitud a la IA: descripciones de pasos, títulos y reescrituras."
   voiceNarration: "Narración por voz"
   voiceUsingAiKey: "No hay clave de voz, así que Mimik usa la clave de OpenAI de Descripciones con IA de arriba."
   aiNoKey: "No hay clave de API, así que los pasos usarán descripciones básicas por reglas."

@@ -69,6 +69,7 @@ export interface Settings {
   aiModel: string;
   aiBaseUrl: string;
   aiLanguage: string;
+  aiPrePrompt: string;
   voiceEnabled: boolean;
   voiceProvider: VoiceProvider;
   voiceApiKey: string;

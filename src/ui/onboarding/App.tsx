@@ -12,7 +12,8 @@ import {
   isCustomModel,
   providerOrDefault,
 } from '@/core/capture/ai/models';
-import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
+import { uiLocale } from '@/core/capture/ai/prompt-settings';
+import { AI_LANGUAGES, type AILanguageCode, defaultAiLanguage } from '@/core/capture/ai/prompts';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { localStorage, openSidebar, requestHostPermissions } from '@/lib/browser-api';
 import { Input } from '@/ui/components/ui/input';
@@ -130,7 +131,7 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
   const [apiKey, setApiKey] = useState('');
   const [apiKeys, setApiKeys] = useState<AIApiKeys>({});
   const [baseUrl, setBaseUrl] = useState('');
-  const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
+  const [aiLanguage, setAiLanguage] = useState<AILanguageCode>(() => defaultAiLanguage(uiLocale()));
   const [ownServer, setOwnServer] = useState(false);
   const [customModel, setCustomModel] = useState(false);
   const aiKeyCheck = useKeyCheck();

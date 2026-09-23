@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { AI_LANGUAGES, GUIDE_META_PROMPT, getLanguageSuffix } from '../prompts';
+import {
+  AI_LANGUAGES,
+  defaultAiLanguage,
+  GUIDE_META_PROMPT,
+  getLanguageSuffix,
+  getPrePromptPrefix,
+  MAX_PRE_PROMPT_CHARS,
+} from '../prompts';
 
 describe('GUIDE_META_PROMPT', () => {
   it('has a steps placeholder', () => {
@@ -78,5 +85,43 @@ describe('AI_LANGUAGES', () => {
       expect(lang.code).toBeTruthy();
       expect(lang.label).toBeTruthy();
     }
+  });
+});
+
+describe('defaultAiLanguage', () => {
+  it('follows the UI locale when it is a supported language', () => {
+    expect(defaultAiLanguage('ru')).toBe('ru');
+    expect(defaultAiLanguage('pt-BR')).toBe('pt-BR');
+    expect(defaultAiLanguage('zh_CN')).toBe('zh-CN');
+  });
+
+  it('matches on the base language', () => {
+    expect(defaultAiLanguage('de-AT')).toBe('de');
+    expect(defaultAiLanguage('pt')).toBe('pt-BR');
+  });
+
+  it('falls back to English', () => {
+    expect(defaultAiLanguage(undefined)).toBe('en');
+    expect(defaultAiLanguage('ja')).toBe('en');
+  });
+});
+
+describe('getPrePromptPrefix', () => {
+  it('is empty when there is no project context', () => {
+    expect(getPrePromptPrefix('')).toBe('');
+    expect(getPrePromptPrefix('   ')).toBe('');
+    expect(getPrePromptPrefix(undefined)).toBe('');
+  });
+
+  it('wraps the project context in delimiters', () => {
+    const prefix = getPrePromptPrefix('  # Acme CRM\nUse formal tone.  ');
+    expect(prefix).toContain('"""\n# Acme CRM\nUse formal tone.\n"""');
+    expect(prefix.endsWith('\n\n')).toBe(true);
+  });
+
+  it('caps very long context', () => {
+    const prefix = getPrePromptPrefix('a'.repeat(MAX_PRE_PROMPT_CHARS + 500));
+    expect(prefix).toContain('a'.repeat(MAX_PRE_PROMPT_CHARS));
+    expect(prefix).not.toContain('a'.repeat(MAX_PRE_PROMPT_CHARS + 1));
   });
 });

@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronRight,
   EyeOff,
+  FileText,
   Globe,
   ImageIcon,
   Mic,
@@ -28,7 +29,8 @@ import {
   isCustomModel,
   providerOrDefault,
 } from '@/core/capture/ai/models';
-import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
+import { uiLocale } from '@/core/capture/ai/prompt-settings';
+import { AI_LANGUAGES, type AILanguageCode, defaultAiLanguage, MAX_PRE_PROMPT_CHARS } from '@/core/capture/ai/prompts';
 import { resolveVoiceApiKey } from '@/core/capture/voice/api-key';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { type BrandLogo, defaultFooterLine, makeBrandLogo } from '@/core/export/branding';
@@ -72,7 +74,9 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const savedSnapshot = useRef<SettingsSnapshot | null>(null);
   const pending = useRef<SettingsSnapshot>({});
   const saveTimer = useRef<number | undefined>(undefined);
-  const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
+  const [aiLanguage, setAiLanguage] = useState<AILanguageCode>(() => defaultAiLanguage(uiLocale()));
+  const [aiPrePrompt, setAiPrePrompt] = useState('');
+  const prePromptInputRef = useRef<HTMLInputElement>(null);
   const [voiceProvider, setVoiceProvider] = useState<VoiceProvider>('openai');
   const [voiceApiKey, setVoiceApiKey] = useState('');
   const [voiceMicrophoneId, setVoiceMicrophoneId] = useState('');
@@ -99,6 +103,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         'aiModel',
         'aiBaseUrl',
         'aiLanguage',
+        'aiPrePrompt',
         'blurPresets',
         'voiceProvider',
         'voiceApiKey',
@@ -120,6 +125,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           setOwnServer(true);
         }
         if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
+        if (typeof result.aiPrePrompt === 'string') setAiPrePrompt(result.aiPrePrompt);
         if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
         setVoiceProvider((result.voiceProvider as VoiceProvider) || 'openai');
         if (result.voiceApiKey) setVoiceApiKey(result.voiceApiKey as string);
@@ -139,6 +145,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     aiModel: model,
     aiBaseUrl: baseUrl,
     aiLanguage,
+    aiPrePrompt,
     blurPresets,
     voiceProvider,
     voiceApiKey,
@@ -192,6 +199,11 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     const timer = window.setTimeout(() => setSaved(false), SAVED_BADGE_MS);
     return () => window.clearTimeout(timer);
   }, [saved]);
+
+  const handlePrePromptFile = async (file: File | undefined) => {
+    if (!file) return;
+    setAiPrePrompt((await file.text()).slice(0, MAX_PRE_PROMPT_CHARS));
+  };
 
   const handleLogoPick = async (file: File | undefined) => {
     if (!file) return;
@@ -420,6 +432,58 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <label htmlFor="ai-pre-prompt" className="text-[11px] font-semibold text-foreground">
+                <FileText size={11} className="inline mr-1 -mt-px" />
+                {i18n.t('settings.prePrompt')}
+              </label>
+              <div className="flex items-center gap-1">
+                <input
+                  ref={prePromptInputRef}
+                  type="file"
+                  accept=".md,.markdown,.txt,text/markdown,text/plain"
+                  className="hidden"
+                  onChange={(e) => {
+                    void handlePrePromptFile(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => prePromptInputRef.current?.click()}
+                  className="border border-border rounded-md px-2 py-0.5 text-[10px] font-medium text-foreground hover:border-accent transition-colors"
+                >
+                  {i18n.t('settings.prePromptLoad')}
+                </button>
+                {aiPrePrompt && (
+                  <button
+                    type="button"
+                    onClick={() => setAiPrePrompt('')}
+                    aria-label={i18n.t('settings.prePromptClear')}
+                    className="w-6 h-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                )}
+              </div>
+            </div>
+            <textarea
+              id="ai-pre-prompt"
+              value={aiPrePrompt}
+              onChange={(e) => setAiPrePrompt(e.target.value.slice(0, MAX_PRE_PROMPT_CHARS))}
+              placeholder={i18n.t('settings.prePromptPlaceholder')}
+              rows={5}
+              className="w-full resize-y rounded-lg border border-border bg-transparent px-2.5 py-2 text-[12px] leading-relaxed font-mono text-foreground placeholder:text-muted-foreground outline-none focus-visible:border-accent"
+            />
+            <p className="mt-1 flex justify-between gap-2 text-[10px] text-muted-foreground leading-relaxed">
+              <span>{i18n.t('settings.prePromptHint')}</span>
+              <span className="tabular-nums shrink-0">
+                {aiPrePrompt.length.toLocaleString()} / {MAX_PRE_PROMPT_CHARS.toLocaleString()}
+              </span>
+            </p>
           </div>
         </div>
 

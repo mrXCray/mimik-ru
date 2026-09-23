@@ -87,5 +87,29 @@ const LANGUAGE_NAMES: Record<string, string> = {
 export function getLanguageSuffix(locale: string): string {
   if (locale.startsWith('en')) return '';
   const lang = LANGUAGE_NAMES[locale.split('-')[0]] || locale;
-  return `\nIMPORTANT: Write the output in ${lang}.`;
+  return `\nIMPORTANT: Write the output in ${lang}, even though these instructions and examples are in English. Keep names, UI labels and quoted strings from the page exactly as written.`;
+}
+
+/** The AI language that matches the extension's UI locale, used until the user picks one. */
+export function defaultAiLanguage(uiLocale: string | undefined): AILanguageCode {
+  if (!uiLocale) return 'en';
+  const normalized = uiLocale.replace('_', '-').toLowerCase();
+  const exact = AI_LANGUAGES.find((lang) => lang.code.toLowerCase() === normalized);
+  if (exact) return exact.code;
+  const base = normalized.split('-')[0];
+  return AI_LANGUAGES.find((lang) => lang.code.split('-')[0].toLowerCase() === base)?.code ?? 'en';
+}
+
+export const MAX_PRE_PROMPT_CHARS = 20_000;
+
+/** Wraps the user's project context so it steers tone and terms without overriding the task's output format. */
+export function getPrePromptPrefix(prePrompt: string | undefined): string {
+  const text = prePrompt?.trim().slice(0, MAX_PRE_PROMPT_CHARS);
+  if (!text) return '';
+  return `Project context and writing guidelines from the user. Follow them for terminology, tone and style, but keep the output format the task below asks for.
+"""
+${text}
+"""
+
+`;
 }

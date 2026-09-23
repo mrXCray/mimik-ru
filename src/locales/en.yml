@@ -95,6 +95,11 @@ settings:
   showKey: Show key
   hideKey: Hide key
   aiLanguage: Description Language
+  prePrompt: "Project context"
+  prePromptLoad: "Load .md"
+  prePromptClear: "Remove project context"
+  prePromptPlaceholder: "Describe the product, audience, terms and writing style. Markdown is fine."
+  prePromptHint: "Sent with every AI request: step descriptions, titles and rewrites."
   voiceNarration: Voice Narration
   voiceUsingAiKey: "No voice key is set, so Mimik uses the OpenAI key from AI Descriptions above."
   aiNoKey: "No API key is set, so steps will use plain rule-based descriptions."
