@@ -69,6 +69,8 @@ export const AI_LANGUAGES = [
 
 export type AILanguageCode = (typeof AI_LANGUAGES)[number]['code'];
 
+import { resolveByLocale } from './locale';
+
 const LANGUAGE_NAMES: Record<string, string> = {
   es: 'Spanish',
   fr: 'French',
@@ -88,18 +90,12 @@ const LANGUAGE_INSTRUCTIONS: Record<Exclude<AILanguageCode, 'en'>, string> = {
 };
 
 export function getLanguageSuffix(locale: string): string {
-  if (locale.startsWith('en')) return '';
+  const normalized = locale.trim().toLowerCase();
+  if (normalized.startsWith('en')) return '';
 
-  const instructions: Record<string, string | undefined> = LANGUAGE_INSTRUCTIONS;
+  const instruction = resolveByLocale(LANGUAGE_INSTRUCTIONS, normalized);
+  if (instruction) return instruction;
 
-  const exact = instructions[locale];
-  if (exact) return exact;
-
-  const base = locale.split('-')[0];
-  for (const [code, instruction] of Object.entries(LANGUAGE_INSTRUCTIONS)) {
-    if (code.split('-')[0] === base) return instruction;
-  }
-
-  const lang = LANGUAGE_NAMES[base] || locale;
+  const lang = resolveByLocale(LANGUAGE_NAMES, normalized) ?? locale;
   return `\nIMPORTANT: Write the output in ${lang}. Never translate button, field, or page names.`;
 }
