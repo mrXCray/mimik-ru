@@ -1,35 +1,10 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { unwrapQuotes } from '@/core/capture/ai/text';
 import { SCRUB_PLACEHOLDER, scrubValues, typedValues } from '@/core/transfer/scrub';
-
-const LOCALES = ['en', 'zh-CN', 'es', 'fr', 'de', 'pt-BR'] as const;
-
-function stepMessage(locale: string, key: string): string {
-  const lines = readFileSync(join(process.cwd(), `src/locales/${locale}.yml`), 'utf8')
-    .replace(/\r\n/g, '\n')
-    .split('\n');
-
-  let inSteps = false;
-  for (const line of lines) {
-    if (/^[\w-]+:/.test(line)) inSteps = line.startsWith('steps:');
-    if (!inSteps) continue;
-    const match = new RegExp(`^ {2}${key}: (.*)$`).exec(line);
-    if (!match) continue;
-    const raw = match[1].trim();
-    if (raw.startsWith("'") && raw.endsWith("'")) return raw.slice(1, -1).replace(/''/g, "'");
-    if (raw.startsWith('"') && raw.endsWith('"')) return raw.slice(1, -1).replace(/\\"/g, '"');
-    return raw;
-  }
-  throw new Error(`steps.${key} missing from ${locale}.yml`);
-}
-
-function substitute(message: string, args: string[]): string {
-  return message.replace(/\$(\d)/g, (_match, index) => args[Number(index) - 1] ?? '');
-}
+import { LOCALES, renderMessage } from './read-locale';
 
 function describeTyping(locale: string, value: string, label: string): string {
-  return substitute(stepMessage(locale, 'typeValueInto'), [value, label]);
+  return renderMessage(locale, 'steps.typeValueInto', [value, label]);
 }
 
 describe('localized typing step descriptions', () => {
@@ -44,7 +19,7 @@ describe('localized typing step descriptions', () => {
   });
 
   it.each(LOCALES)('%s clears a field without echoing any value', (locale) => {
-    const cleared = substitute(stepMessage(locale, 'clearField'), ['Password']);
+    const cleared = renderMessage(locale, 'steps.clearField', ['Password']);
     expect(cleared).toContain('Password');
     expect(cleared).not.toContain('"');
   });
@@ -65,6 +40,24 @@ describe('bundle redaction over localized descriptions', () => {
 
       const scrubbed = scrubValues(description, typedValues([{ inputValue: value }]));
       expect(scrubbed).not.toContain(value);
+      expect(scrubbed).toContain(SCRUB_PLACEHOLDER);
+    });
+  }
+});
+
+describe('bundle redaction over AI-written descriptions', () => {
+  const shapes = [
+    { name: 'a sentence opening with the quoted value', text: '"$1" in das Feld $2 eingeben' },
+    { name: 'a sentence closing with the quoted value', text: '在 $2 字段中输入 "$1"' },
+    { name: 'a sentence quoting the value mid-way', text: 'Type "$1" in $2' },
+    { name: 'a description the model wrapped whole', text: '"Type "$1" in $2"' },
+  ];
+
+  for (const { name, text } of shapes) {
+    it(`redacts a short value in ${name}`, () => {
+      const written = unwrapQuotes(text.replace('$1', 'abc').replace('$2', 'Email'));
+      const scrubbed = scrubValues(written, typedValues([{ inputValue: 'abc' }]));
+      expect(scrubbed).not.toContain('abc');
       expect(scrubbed).toContain(SCRUB_PLACEHOLDER);
     });
   }
