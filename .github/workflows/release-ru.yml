@@ -4,7 +4,8 @@ name: Release (RU Extra)
 # release, with the notes from .github/release-notes/<tag>.md followed by
 # INSTALL.ru.md. Runs on a pushed v*-ru* tag, on a manual run, or when a push to
 # main adds or changes .github/release-notes/<tag>.md (the tag is then created
-# on that commit). If AMO_JWT_ISSUER / AMO_JWT_SECRET secrets are set, the
+# on that commit) or INSTALL.ru.md (refreshes the newest release). Re-running a
+# finished run rebuilds its release, e.g. after adding the AMO signing secrets. If AMO_JWT_ISSUER / AMO_JWT_SECRET secrets are set, the
 # Firefox build is also signed on addons.mozilla.org (unlisted) and attached.
 
 on:
@@ -15,6 +16,7 @@ on:
       - main
     paths:
       - ".github/release-notes/*.md"
+      - "INSTALL.ru.md"
   workflow_dispatch:
     inputs:
       tag:
@@ -56,7 +58,8 @@ jobs:
         if: env.TAG == ''
         run: |
           notes=$(git diff --name-only HEAD^ HEAD -- '.github/release-notes/*.md' | head -n 1)
-          [ -n "$notes" ] || { echo "No release notes changed"; exit 1; }
+          # Only the install guide changed: refresh the newest release.
+          [ -n "$notes" ] || notes=$(ls .github/release-notes/*.md | sort -V | tail -n 1)
           echo "TAG=$(basename "$notes" .md)" >> "$GITHUB_ENV"
 
       - uses: pnpm/action-setup@v5

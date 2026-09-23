@@ -154,7 +154,7 @@ Mozilla бесплатно подписывает расширения для л
 2. В репозитории на GitHub: Settings → Secrets and variables → Actions → **New repository secret**. Добавьте:
    - `AMO_JWT_ISSUER` — значение «JWT issuer»;
    - `AMO_JWT_SECRET` — значение «JWT secret».
-3. Перезапустите workflow **Release (RU Extra)**: Actions → Release (RU Extra) → Run workflow, тег `v1.2.0-ru-extra`. В релизе появится `mimik-1.2.0-ru-extra-firefox-signed.xpi`.
+3. Перезапустите сборку релиза: вкладка **Actions** → **Release (RU Extra)** → последний запуск → **Re-run all jobs**. Через несколько минут в релизе появится `mimik-1.2.0-ru-extra-firefox-signed.xpi`.
 
 > Подписать сборку под ID официального Mimik нельзя. Поэтому у сборок RU Extra свой ID, `mimik-ru@mrxcray.github.io`, и они могут стоять рядом с официальным дополнением.
 
