@@ -1,0 +1,98 @@
+name: Release (RU Extra)
+
+# Builds the Chrome and Firefox packages for a tag and publishes them as a GitHub
+# release, with the notes from .github/release-notes/<tag>.md followed by
+# INSTALL.ru.md. If AMO_JWT_ISSUER / AMO_JWT_SECRET secrets are set, the
+# Firefox build is also signed on addons.mozilla.org (unlisted) and attached.
+
+on:
+  push:
+    tags:
+      - "v*-ru*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to (re)build the release for, e.g. v1.2.0-ru-extra"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      # Own add-on ID: AMO will not sign a build under the upstream ID, and it
+      # lets this build sit next to the store version of Mimik.
+      MIMIK_GECKO_ID: mimik-ru@mrxcray.github.io
+      AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+      AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build Chrome and Firefox packages
+        run: pnpm zip:all
+
+      - name: Name release assets
+        run: |
+          V="${TAG#v}"
+          echo "V=$V" >> "$GITHUB_ENV"
+          mkdir -p dist
+          cp .output/*-chrome.zip "dist/mimik-$V-chrome.zip"
+          cp .output/*-firefox.zip "dist/mimik-$V-firefox.xpi"
+          cp .output/*-sources.zip "dist/mimik-$V-sources.zip"
+
+      - name: Sign Firefox build on AMO (unlisted)
+        if: env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != ''
+        continue-on-error: true
+        run: |
+          npx -y web-ext@8 sign \
+            --source-dir .output/firefox-mv3 \
+            --channel unlisted \
+            --api-key "$AMO_JWT_ISSUER" \
+            --api-secret "$AMO_JWT_SECRET" \
+            --upload-source-code "dist/mimik-$V-sources.zip" \
+            --artifacts-dir signed \
+            --approval-timeout 1200000
+          cp signed/*.xpi "dist/mimik-$V-firefox-signed.xpi"
+
+      - name: Release notes
+        run: |
+          notes=".github/release-notes/$TAG.md"
+          { if [ -f "$notes" ]; then cat "$notes"; fi; cat INSTALL.ru.md; } > release-notes.md
+
+      - name: Publish release
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "Mimik $V" --notes-file release-notes.md
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --title "Mimik $V" --notes-file release-notes.md --verify-tag
+          fi

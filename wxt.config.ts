@@ -72,7 +72,8 @@ export default defineConfig({
             },
             browser_specific_settings: {
               gecko: {
-                id: "mimik@westpoint.io",
+                // Forks set MIMIK_GECKO_ID so their builds can be signed on AMO and sit beside the store add-on.
+                id: process.env.MIMIK_GECKO_ID || "mimik@westpoint.io",
                 strict_min_version: "128.0",
                 data_collection_permissions: {
                   required: ["websiteActivity"],
