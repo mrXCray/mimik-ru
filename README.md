@@ -6,6 +6,7 @@ It is a dirty fork, assisted with Claude, with:
 - added LLM preprompt
 - added LLM language settings
 - changed markdown export into (markdown + images).zip
+- added export (markdown + images).zip constructed to import into BookStack
 
 Use it on your own risk.
 -------
