@@ -252,6 +252,12 @@ editor:
   rewriteErrorNoApiKey: 请在设置中添加 AI API 密钥以改写文本。
   rewriteErrorFailed: 无法改写选中文本。请重试。
   rewriteErrorStale: 文本已变化。请重新选择。
+  addNote: "添加备注"
+  notePlaceholder: "截图下方的备注"
+  generateNote: "用 AI 写备注"
+  regenerateNote: "用 AI 重写备注"
+  noteWriting: "正在撰写备注…"
+  noteNothing: "AI 没有找到可为此步骤补充的有用内容。"
 
 capture:
   recordSteps: 录制步骤
@@ -600,3 +606,18 @@ profiles:
   deleteTitle: "删除配置档案“$1”？"
   deleteMessage: "其 AI、背景和导出设置将被删除。用它录制的指南会保留，并改用当前配置档案。"
   hint: "背景、语言、AI 和导出设置按配置档案分别保存。新录制使用所选配置档案，每份指南保留录制时的配置档案。"
+
+proofread:
+  button: "校对文本"
+  title: "校对指南"
+  progress: "已检查 $1 / $2…"
+  found: "发现 $1 处修改，请选择要应用的内容。"
+  noChanges: "无需修改。"
+  failed: "有 $1 段未能检查。"
+  stop: "停止"
+  apply: "应用（$1）"
+  applyFailed: "无法应用修改，请重试。"
+  allFailed: "AI 没有响应，因此未检查任何内容。请检查 AI 设置以及服务器是否在运行。"
+  itemTitle: "标题"
+  itemDescription: "描述"
+  itemNote: "步骤 $1 · 备注"

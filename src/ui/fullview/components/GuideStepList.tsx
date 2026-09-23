@@ -20,6 +20,7 @@ interface GuideStepListProps {
   steps: Step[];
   screenshots: Map<string, Screenshot>;
   onDescriptionChange: (stepId: string, description: string) => void;
+  onNoteChange?: (stepId: string, note: string) => void;
   onDelete: (stepId: string) => void;
   onOpenEditor: (stepId: string, tool: 'annotate' | 'redact' | 'crop' | 'target') => void;
   onReorder: (newSteps: Step[]) => void;
@@ -34,6 +35,7 @@ export default function GuideStepList({
   steps,
   screenshots,
   onDescriptionChange,
+  onNoteChange,
   onDelete,
   onOpenEditor,
   onReorder,
@@ -216,6 +218,7 @@ export default function GuideStepList({
                   onDelete={onDelete}
                   onChanged={onChanged}
                   readOnly={readOnly}
+                  hasApiKey={hasApiKey}
                   dragHandleProps={dragHandlers(idx)}
                 />
               ) : (
@@ -226,6 +229,7 @@ export default function GuideStepList({
                   placeholderRatio={frameRatio}
                   frameRatio={frameRatio}
                   onDescriptionChange={onDescriptionChange}
+                  onNoteChange={onNoteChange}
                   onDelete={onDelete}
                   onOpenEditor={onOpenEditor}
                   readOnly={readOnly}

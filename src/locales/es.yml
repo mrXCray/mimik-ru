@@ -252,6 +252,12 @@ editor:
   rewriteErrorNoApiKey: "A\xF1ade una clave de API de IA en los ajustes para reescribir texto."
   rewriteErrorFailed: "No se pudo reescribir la selecci\xF3n. Int\xE9ntalo de nuevo."
   rewriteErrorStale: "El texto cambi\xF3. Vuelve a seleccionarlo."
+  addNote: "Añadir nota"
+  notePlaceholder: "Nota bajo la captura"
+  generateNote: "Escribir nota con IA"
+  regenerateNote: "Reescribir nota con IA"
+  noteWriting: "Escribiendo nota…"
+  noteNothing: "La IA no encontró nada útil que añadir a este paso."
 
 capture:
   recordSteps: Grabar pasos
@@ -600,3 +606,18 @@ profiles:
   deleteTitle: "¿Eliminar el perfil «$1»?"
   deleteMessage: "Se eliminarán sus ajustes de IA, contexto y exportación. Las guías grabadas con él se conservan y usan el perfil activo."
   hint: "El contexto, el idioma y los ajustes de IA y exportación se guardan por perfil. Las nuevas grabaciones usan el perfil elegido y cada guía conserva el suyo."
+
+proofread:
+  button: "Revisar texto"
+  title: "Revisar la guía"
+  progress: "Revisados $1 de $2…"
+  found: "$1 correcciones encontradas. Elige cuáles aplicar."
+  noChanges: "No hacen falta correcciones."
+  failed: "No se pudieron revisar $1 fragmentos."
+  stop: "Detener"
+  apply: "Aplicar ($1)"
+  applyFailed: "No se pudieron aplicar las correcciones. Inténtalo de nuevo."
+  allFailed: "La IA no respondió, así que no se revisó nada. Comprueba los ajustes de IA y que el servidor esté en marcha."
+  itemTitle: "Título"
+  itemDescription: "Descripción"
+  itemNote: "Paso $1 · nota"

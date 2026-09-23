@@ -1,5 +1,5 @@
 import { AI_KEY_SETTINGS, resolveAiKey } from '@/core/capture/ai/keys';
-import type { DOMContext } from '@/core/capture/dom/context';
+import { type DOMContext, serializeDOMContext } from '@/core/capture/dom/context';
 import { CaptureState } from '@/core/capture/machine';
 import { buildFallbackDescription } from '@/core/capture/step-description';
 import { db } from '@/core/guides/db';
@@ -104,6 +104,7 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
     timestamp,
     screenshotId,
     elementMeta: data.elementMeta,
+    ...(data.domContext ? { domContext: serializeDOMContext(data.domContext) } : {}),
     descriptionSource: 'heuristic',
     aiPending: willUseAI || narrationCapturing,
   });
@@ -136,6 +137,7 @@ export async function handleFinalizeInputStep(
   const screenshotId = await takeScreenshot(guideId, stepId, elementMeta);
   const updates: Partial<Step> = { elementMeta };
   if (screenshotId) updates.screenshotId = screenshotId;
+  if (domContext) updates.domContext = serializeDOMContext(domContext);
   await db.steps.update(stepId, updates);
 
   if (domContext && guideId) {

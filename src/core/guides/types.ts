@@ -37,6 +37,10 @@ export interface Step {
   screenshotId?: string;
   elementMeta?: ElementMeta;
   inputValue?: string;
+  /** Serialized page context around the target at capture time, reused for later AI requests. */
+  domContext?: string;
+  /** Free text shown under the screenshot (typed by hand or written by AI). */
+  note?: string;
   descriptionSource?: DescriptionSource;
   aiPending?: boolean;
   blockType?: BlockType;

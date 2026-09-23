@@ -1,4 +1,4 @@
-import { History, Loader2, Play, Sparkles } from 'lucide-react';
+import { History, Loader2, Play, Sparkles, SpellCheck } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import { i18n } from '#imports';
@@ -13,6 +13,7 @@ import {
   updateGuideDescription,
   updateGuideTitle,
   updateStepDescription,
+  updateStepNote,
 } from '@/core/guides/service';
 import type { SnapshotLike } from '@/core/guides/snapshot-diff';
 import type { Guide, Screenshot, Snapshot, Step } from '@/core/guides/types';
@@ -28,6 +29,7 @@ import AnnotationEditor from '@/ui/shared/AnnotationEditor';
 import { useAskAi } from '@/ui/shared/AskAi';
 import FaviconImg from '@/ui/shared/FaviconImg';
 import { guideDescriptionErrorMessage } from '@/ui/shared/guide-description-error';
+import ProofreadDialog from '@/ui/shared/ProofreadDialog';
 import Toast from '@/ui/shared/Toast';
 import GuideStepList from './components/GuideStepList';
 import VersionHistoryPanel from './components/VersionHistoryPanel';
@@ -76,6 +78,7 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
     historyOpen,
     setHistoryOpen,
     historyRefreshKey,
+    bumpHistoryRefresh,
   } = useFullview((s) => ({
     setGuideTitle: s.setGuideTitle,
     setGuideStepCount: s.setGuideStepCount,
@@ -86,6 +89,7 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
     historyOpen: s.historyOpen,
     setHistoryOpen: s.setHistoryOpen,
     historyRefreshKey: s.historyRefreshKey,
+    bumpHistoryRefresh: s.bumpHistoryRefresh,
   }));
 
   const [data, setData] = useState<GuideData | null>(null);
@@ -99,6 +103,7 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
   const [description, setDescription] = useState('');
   const [generating, setGenerating] = useState(false);
   const [hasApiKey, setHasApiKey] = useState(false);
+  const [proofreadOpen, setProofreadOpen] = useState(false);
   const [descriptionError, setDescriptionError] = useState<string | null>(null);
   const titleRef = useRef('');
   const appliedInitialRef = useRef(false);
@@ -192,6 +197,17 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
     setData((prev) => {
       if (!prev) return prev;
       return { ...prev, steps: prev.steps.map((s) => (s.id === stepId ? { ...s, description } : s)) };
+    });
+  }, []);
+
+  const handleNoteChange = useCallback(async (stepId: string, note: string) => {
+    await updateStepNote(stepId, note);
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        steps: prev.steps.map((s) => (s.id === stepId ? { ...s, note: note.trim() ? note : undefined } : s)),
+      };
     });
   }, []);
 
@@ -463,6 +479,16 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
                 {domain}
               </span>
             )}
+            {editing && !preview && hasApiKey && data.steps.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setProofreadOpen(true)}
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-foreground bg-card border border-border hover:border-accent hover:text-accent px-3 py-0.5 rounded-full transition-colors ml-auto"
+              >
+                <SpellCheck size={11} />
+                {i18n.t('proofread.button')}
+              </button>
+            )}
             {!editing && !preview && viewSteps.length > 0 && (
               <button
                 onClick={() => {
@@ -478,11 +504,23 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
             )}
           </div>
 
+          <ProofreadDialog
+            open={proofreadOpen}
+            guide={data.guide}
+            steps={data.steps}
+            onOpenChange={setProofreadOpen}
+            onApplied={() => {
+              bumpHistoryRefresh();
+              void loadGuide();
+            }}
+          />
+
           <GuideStepList
             guideId={guideId}
             steps={viewSteps}
             screenshots={viewScreenshots}
             onDescriptionChange={handleDescriptionChange}
+            onNoteChange={handleNoteChange}
             onDelete={handleDeleteStep}
             onOpenEditor={handleOpenEditor}
             onReorder={(newSteps) => setData((prev) => (prev ? { ...prev, steps: newSteps } : prev))}

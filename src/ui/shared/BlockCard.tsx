@@ -5,6 +5,7 @@ import { CALLOUT_VARIANTS, calloutAccent, DEFAULT_CALLOUT_COLOR, tint, variantLa
 import { updateCallout } from '@/core/guides/service';
 import type { CalloutVariant, Step } from '@/core/guides/types';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/components/ui/tooltip';
+import { useAskAi } from '@/ui/shared/AskAi';
 import ConfirmDialog from '@/ui/shared/ConfirmDialog';
 import { DragGrip, type DragHandleProps, useCardDrag } from '@/ui/shared/card-drag';
 
@@ -15,6 +16,7 @@ interface BlockCardProps {
   onChanged?: () => void;
   dragHandleProps?: DragHandleProps;
   readOnly?: boolean;
+  hasApiKey?: boolean;
 }
 
 export default function BlockCard({
@@ -24,6 +26,7 @@ export default function BlockCard({
   onChanged,
   dragHandleProps,
   readOnly,
+  hasApiKey,
 }: BlockCardProps) {
   const [description, setDescription] = useState(step.description);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -33,6 +36,15 @@ export default function BlockCard({
   }, [step.description]);
 
   const cardDrag = useCardDrag(dragHandleProps);
+  const askAi = useAskAi(
+    description,
+    (next) => {
+      setDescription(next);
+      onDescriptionChange?.(step.id, next);
+    },
+    !readOnly && Boolean(hasApiKey),
+    step.guideId,
+  );
   const isHeading = step.blockType === 'heading';
   const accent = calloutAccent(step);
   const variant = step.calloutVariant ?? 'info';
@@ -83,6 +95,7 @@ export default function BlockCard({
               e.target.style.height = '0';
               e.target.style.height = `${e.target.scrollHeight}px`;
             }}
+            onSelect={askAi.onSelect}
             onBlur={() => {
               if (description !== step.description) onDescriptionChange?.(step.id, description);
             }}
@@ -93,6 +106,7 @@ export default function BlockCard({
       {!readOnly && (
         <div className="flex items-center gap-1 mt-1">
           {dragHandleProps && <DragGrip />}
+          {askAi.trigger}
           {!isHeading &&
             CALLOUT_VARIANTS.map((option) => (
               <Tooltip key={option}>

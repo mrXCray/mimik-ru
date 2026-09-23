@@ -252,6 +252,12 @@ editor:
   rewriteErrorNoApiKey: "Ajoutez une cl\xE9 d'API d'IA dans les r\xE9glages pour r\xE9\xE9crire du texte."
   rewriteErrorFailed: "Impossible de r\xE9\xE9crire la s\xE9lection. R\xE9essayez."
   rewriteErrorStale: "Le texte a chang\xE9. S\xE9lectionnez-le \xE0 nouveau."
+  addNote: "Ajouter une note"
+  notePlaceholder: "Note sous la capture"
+  generateNote: "Écrire une note avec l'IA"
+  regenerateNote: "Réécrire la note avec l'IA"
+  noteWriting: "Rédaction de la note…"
+  noteNothing: "L'IA n'a rien trouvé d'utile à ajouter à cette étape."
 
 capture:
   recordSteps: "Enregistrer des étapes"
@@ -600,3 +606,18 @@ profiles:
   deleteTitle: "Supprimer le profil « $1 » ?"
   deleteMessage: "Ses réglages d'IA, de contexte et d'export seront supprimés. Les guides enregistrés avec lui restent et utilisent le profil actif."
   hint: "Le contexte, la langue et les réglages d'IA et d'export sont enregistrés par profil. Les nouveaux enregistrements utilisent le profil choisi et chaque guide garde le sien."
+
+proofread:
+  button: "Relire"
+  title: "Relire le guide"
+  progress: "$1 sur $2 vérifiés…"
+  found: "$1 corrections trouvées. Choisissez celles à appliquer."
+  noChanges: "Aucune correction nécessaire."
+  failed: "$1 éléments n'ont pas pu être vérifiés."
+  stop: "Arrêter"
+  apply: "Appliquer ($1)"
+  applyFailed: "Impossible d'appliquer les corrections. Réessayez."
+  allFailed: "L'IA n'a pas répondu, rien n'a été vérifié. Vérifiez les réglages IA et que le serveur tourne."
+  itemTitle: "Titre"
+  itemDescription: "Description"
+  itemNote: "Étape $1 · note"

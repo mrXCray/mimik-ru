@@ -252,6 +252,12 @@ editor:
   rewriteErrorNoApiKey: Adicione uma chave de API de IA nos ajustes para reescrever textos.
   rewriteErrorFailed: "N\xE3o foi poss\xEDvel reescrever a sele\xE7\xE3o. Tente novamente."
   rewriteErrorStale: O texto mudou. Selecione-o novamente.
+  addNote: "Adicionar nota"
+  notePlaceholder: "Nota abaixo da captura"
+  generateNote: "Escrever nota com IA"
+  regenerateNote: "Reescrever nota com IA"
+  noteWriting: "Escrevendo nota…"
+  noteNothing: "A IA não encontrou nada útil para acrescentar a este passo."
 
 capture:
   recordSteps: Gravar etapas
@@ -600,3 +606,18 @@ profiles:
   deleteTitle: "Excluir o perfil \"$1\"?"
   deleteMessage: "As configurações de IA, contexto e exportação dele serão excluídas. Os guias gravados com ele continuam e usam o perfil ativo."
   hint: "Contexto, idioma e configurações de IA e exportação ficam salvos por perfil. Novas gravações usam o perfil escolhido e cada guia mantém o seu."
+
+proofread:
+  button: "Revisar texto"
+  title: "Revisar o guia"
+  progress: "$1 de $2 verificados…"
+  found: "$1 correções encontradas. Escolha quais aplicar."
+  noChanges: "Nenhuma correção necessária."
+  failed: "Não foi possível verificar $1 trechos."
+  stop: "Parar"
+  apply: "Aplicar ($1)"
+  applyFailed: "Não foi possível aplicar as correções. Tente novamente."
+  allFailed: "A IA não respondeu, então nada foi verificado. Confira as configurações de IA e se o servidor está rodando."
+  itemTitle: "Título"
+  itemDescription: "Descrição"
+  itemNote: "Passo $1 · nota"

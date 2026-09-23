@@ -48,6 +48,7 @@ const HEAD_LOGO_H = 5;
 const COVER_RULE_GAP = 8;
 const TITLE_LINE_H = 11;
 const TEXT_LINE_H = 5;
+const NOTE_LINE_H = 4.5;
 const LEAD_SIZE = (LEAD_FONT_PX * 72) / 96;
 const LEAD_LINE_H = pxToMm(LEAD_FONT_PX * LEAD_LINE_RATIO);
 const LEAD_BASELINE = 4;
@@ -256,7 +257,9 @@ export async function exportGuideAsPDF(
     let imgDataUrl: string | null = null;
     let frame = { width: imgWidth, height: 0 };
     let img = { width: 0, height: 0, x: 0, y: 0 };
-    const textOverhead = 6 + descLines.length * TEXT_LINE_H + 4;
+    const noteLines = step.note?.trim() ? splitFor(doc, step.note.trim(), TEXT_COL, 10, false) : [];
+    const noteH = noteLines.length ? 3 + noteLines.length * NOTE_LINE_H : 0;
+    const textOverhead = 6 + descLines.length * TEXT_LINE_H + 4 + noteH;
     if (screenshot) {
       try {
         const rendered = await renderScreenshot(screenshot, { format: 'image/jpeg', quality: JPEG_QUALITY });
@@ -318,6 +321,10 @@ export async function exportGuideAsPDF(
       const altText = screenshot?.edits?.alt || i18n.t('export.stepLabel', [stepNum]);
       doc.text(doc.splitTextToSize(altText, frame.width), TEXT_X, iy + 4, { renderingMode: 'invisible' });
       iy += frame.height;
+    }
+    if (noteLines.length) {
+      writeLines(doc, noteLines, TEXT_X, iy + 3 + NOTE_LINE_H - 1, 10, false, MUTED, NOTE_LINE_H);
+      iy += noteH;
     }
     sy = iy + STEP_GAP;
   }

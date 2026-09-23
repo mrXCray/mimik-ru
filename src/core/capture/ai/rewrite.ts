@@ -1,13 +1,7 @@
-import { generateText } from 'ai';
-import { settingsForGuide } from '@/core/profiles/guide-settings';
-import { logger } from '@/lib/logger';
 import type { RewriteSelectionResponse } from '@/lib/messaging';
-import { resolveAiKey } from './keys';
-import { AI_LIMIT_KEYS, generationLimits, resolveAiLimits } from './limits';
-import { AI_PROVIDERS } from './models';
-import { applyPromptSettings, type PromptSettings, resolvePromptSettings } from './prompt-settings';
+import { generateForGuide } from './guide-ai';
+import { applyPromptSettings, type PromptSettings } from './prompt-settings';
 import { REWRITE_PROMPT } from './prompts';
-import { createModel } from './provider';
 
 const WRAPPED_IN_QUOTES = /^["“'](.*)["”']$/s;
 
@@ -29,36 +23,12 @@ export async function rewriteSelection(
   instruction: string,
   guideId?: string,
 ): Promise<RewriteSelectionResponse> {
-  const settings = await settingsForGuide(guideId, [
-    'aiApiKeys',
-    'aiApiKey',
-    'aiProvider',
-    'aiModel',
-    'aiBaseUrl',
-    'aiLanguage',
-    'aiPrePrompt',
-    ...AI_LIMIT_KEYS,
-  ]);
-  const { provider, apiKey, usable } = resolveAiKey(settings);
-  if (!usable) return { error: 'no-api-key' };
-
-  try {
-    const { text: raw } = await generateText({
-      model: createModel(
-        provider,
-        (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel,
-        apiKey,
-        settings.aiBaseUrl as string | undefined,
-      ),
-      prompt: buildRewritePrompt(text, instruction, resolvePromptSettings(settings)),
-      ...generationLimits(resolveAiLimits(settings)),
-    });
-
-    const cleaned = cleanRewrite(raw);
-    if (!cleaned) return { error: 'generation-failed' };
-    return { text: cleaned };
-  } catch (err) {
-    logger.error('Selection rewrite failed', err);
-    return { error: 'generation-failed' };
-  }
+  const result = await generateForGuide(
+    guideId,
+    (settings) => buildRewritePrompt(text, instruction, settings),
+    'Selection rewrite',
+  );
+  if (result.error) return { error: result.error };
+  const cleaned = cleanRewrite(result.text);
+  return cleaned ? { text: cleaned } : { error: 'generation-failed' };
 }

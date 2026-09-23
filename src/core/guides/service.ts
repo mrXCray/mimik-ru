@@ -204,6 +204,10 @@ export async function updateStepDescription(
   await db.steps.update(stepId, source ? { description, descriptionSource: source } : { description });
 }
 
+export async function updateStepNote(stepId: string, note: string): Promise<void> {
+  await db.steps.update(stepId, { note: note.trim() ? note : undefined });
+}
+
 export async function applyNarrationToSteps(updates: readonly NarrationUpdate[]): Promise<void> {
   if (updates.length === 0) return;
   await db.transaction('rw', db.steps, async () => {

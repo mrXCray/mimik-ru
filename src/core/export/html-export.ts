@@ -113,6 +113,7 @@ export async function exportGuideAsHTML(
             urlHtml ? `<span style="color:#6B7280;font-weight:400;"> &nbsp;·&nbsp; </span>${urlHtml}` : ''
           }</p>
           ${imgHtml}
+          ${step.note?.trim() ? `<p data-step-note="true" style="margin:10px 0 0;font-size:14px;line-height:1.55;color:#4B5563;white-space:pre-wrap;overflow-wrap:anywhere;">${escapeHtml(step.note.trim())}</p>` : ''}
         </div>
       </section>`);
   }

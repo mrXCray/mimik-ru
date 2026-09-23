@@ -89,6 +89,8 @@ export async function buildGuideMarkdown(
       lines.push(`![${altText}](${imageLink(path, images.length)})`, '');
       images.push({ path, blob: rendered });
     }
+
+    if (step.note?.trim()) lines.push(step.note.trim(), '');
   }
 
   return { markdown: lines.join('\n'), images };

@@ -251,4 +251,10 @@ describe('exportGuideAsMarkdown', () => {
     const files = unzipSync(new Uint8Array(await zip.arrayBuffer()));
     expect(Object.keys(files)).toEqual(['Test Guide.md']);
   });
+
+  it('puts a step note under the screenshot', async () => {
+    const step = makeStep({ note: 'Сумма появится в карточке сделки.' });
+    const { markdown } = await buildGuideMarkdown(makeGuide(), [step], new Map([[step.id, makeScreenshot(step.id)]]));
+    expect(markdown).toContain('](images/step-01.png)\n\nСумма появится в карточке сделки.\n');
+  });
 });

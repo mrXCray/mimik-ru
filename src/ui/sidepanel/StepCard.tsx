@@ -1,15 +1,17 @@
-import { Check, Copy, Loader2, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Check, Copy, Loader2, NotebookPen, StickyNote, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { replaceScreenshot } from '@/core/guides/service';
 import type { Screenshot, Step } from '@/core/guides/types';
 import { imageDimensions, renderScreenshot } from '@/core/screenshot/render';
 import { logger } from '@/lib/logger';
+import { sendMessage } from '@/lib/messaging';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/components/ui/tooltip';
 import { useAskAi } from '@/ui/shared/AskAi';
 import ConfirmDialog from '@/ui/shared/ConfirmDialog';
 import { DragGrip, type DragHandleProps, useCardDrag } from '@/ui/shared/card-drag';
 import ImagePlaceholder from '@/ui/shared/ImagePlaceholder';
+import { rewriteErrorMessage } from '@/ui/shared/rewrite-error';
 import ScreenshotView from '@/ui/shared/ScreenshotView';
 import StepSourceBadge from '@/ui/shared/StepSourceBadge';
 
@@ -18,6 +20,7 @@ interface StepCardProps {
   number: number;
   screenshot: Screenshot | undefined;
   onDescriptionChange?: (stepId: string, description: string) => void;
+  onNoteChange?: (stepId: string, note: string) => void;
   onDelete?: (stepId: string) => void;
   dragHandleProps?: DragHandleProps;
   onOpenEditor?: (stepId: string, tool: 'annotate' | 'redact' | 'crop' | 'target') => void;
@@ -34,6 +37,7 @@ export default function StepCard({
   number,
   screenshot,
   onDescriptionChange,
+  onNoteChange,
   onDelete,
   dragHandleProps,
   onOpenEditor,
@@ -52,6 +56,44 @@ export default function StepCard({
   useEffect(() => {
     setDescription(step.description);
   }, [step.description]);
+
+  const [note, setNote] = useState(step.note ?? '');
+  const [noteOpen, setNoteOpen] = useState(false);
+  const noteRef = useRef<HTMLTextAreaElement | null>(null);
+  const [noteBusy, setNoteBusy] = useState(false);
+  const [noteError, setNoteError] = useState<string | null>(null);
+  const aiAvailable = !readOnly && Boolean(hasApiKey);
+
+  useEffect(() => {
+    setNote(step.note ?? '');
+  }, [step.note]);
+
+  const saveNote = (next: string) => {
+    setNote(next);
+    if (next !== (step.note ?? '')) onNoteChange?.(step.id, next);
+  };
+
+  const noteAskAi = useAskAi(note, saveNote, aiAvailable && Boolean(note.trim()), step.guideId);
+
+  const handleGenerateNote = async () => {
+    if (noteBusy) return;
+    setNoteBusy(true);
+    setNoteError(null);
+    setNoteOpen(true);
+    try {
+      const result = await sendMessage('generateStepNote', { guideId: step.guideId, stepId: step.id });
+      if (result.error) setNoteError(rewriteErrorMessage(result.error));
+      else if (result.text) saveNote(result.text);
+      else setNoteError(i18n.t('editor.noteNothing'));
+    } catch (err) {
+      logger.error('Step note generation failed', err);
+      setNoteError(rewriteErrorMessage('generation-failed'));
+    } finally {
+      setNoteBusy(false);
+    }
+  };
+
+  const showNote = readOnly ? Boolean(step.note?.trim()) : noteOpen || Boolean(note.trim()) || noteBusy;
 
   const handleDescriptionBlur = () => {
     if (description !== step.description) onDescriptionChange?.(step.id, description);
@@ -152,9 +194,81 @@ export default function StepCard({
             />
           )}
         </div>
+        {showNote && (
+          <div className="mt-1.5 ml-[30px] flex items-start gap-1.5">
+            {readOnly ? (
+              <p className="flex-1 text-[12px] leading-snug text-muted-foreground whitespace-pre-wrap">{step.note}</p>
+            ) : noteBusy ? (
+              <span className="flex-1 flex items-center gap-1.5 text-[12px] text-muted-foreground">
+                <Loader2 size={12} className="animate-spin" />
+                {i18n.t('editor.noteWriting')}
+              </span>
+            ) : (
+              <textarea
+                className="flex-1 min-w-0 text-[12px] leading-snug resize-none outline-none border-0 border-b border-transparent focus:border-accent bg-transparent p-0 text-muted-foreground placeholder:text-muted-foreground/60"
+                value={note}
+                rows={1}
+                ref={(el) => {
+                  noteRef.current = el;
+                  if (el) {
+                    el.style.height = '0';
+                    el.style.height = `${el.scrollHeight}px`;
+                  }
+                }}
+                placeholder={i18n.t('editor.notePlaceholder')}
+                onChange={(e) => {
+                  setNote(e.target.value);
+                  e.target.style.height = '0';
+                  e.target.style.height = `${e.target.scrollHeight}px`;
+                }}
+                onSelect={noteAskAi.onSelect}
+                onBlur={() => {
+                  saveNote(note);
+                  if (!note.trim()) setNoteOpen(false);
+                }}
+              />
+            )}
+            {!readOnly && noteAskAi.trigger}
+          </div>
+        )}
+        {noteError && <p className="mt-1 ml-[30px] text-[11px] text-destructive">{noteError}</p>}
         <div className="flex items-center justify-between gap-2 mt-1">
           {step.aiPending ? <span /> : <StepSourceBadge source={step.descriptionSource} />}
           <div className="flex items-center gap-0.5">
+            {!readOnly && !showNote && onNoteChange && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNoteOpen(true);
+                      requestAnimationFrame(() => noteRef.current?.focus());
+                    }}
+                    className="p-1 rounded-md transition-colors text-border hover:text-accent"
+                    aria-label={i18n.t('editor.addNote')}
+                  >
+                    <StickyNote size={13} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{i18n.t('editor.addNote')}</TooltipContent>
+              </Tooltip>
+            )}
+            {aiAvailable && onNoteChange && !step.aiPending && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => void handleGenerateNote()}
+                    aria-disabled={noteBusy}
+                    className="p-1 rounded-md transition-colors text-border hover:text-accent aria-disabled:opacity-50"
+                    aria-label={i18n.t(note.trim() ? 'editor.regenerateNote' : 'editor.generateNote')}
+                  >
+                    <NotebookPen size={13} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{i18n.t(note.trim() ? 'editor.regenerateNote' : 'editor.generateNote')}</TooltipContent>
+              </Tooltip>
+            )}
             {askAi.trigger}
             {screenshot && (
               <Tooltip>

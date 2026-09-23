@@ -242,6 +242,12 @@ editor:
   rewriteErrorNoApiKey: Füge in den Einstellungen einen KI-API-Schlüssel hinzu, um Text umzuschreiben.
   rewriteErrorFailed: Die Auswahl konnte nicht umgeschrieben werden. Versuche es erneut.
   rewriteErrorStale: Der Text hat sich geändert. Wähle ihn erneut aus.
+  addNote: "Notiz hinzufügen"
+  notePlaceholder: "Notiz unter dem Screenshot"
+  generateNote: "Notiz mit KI schreiben"
+  regenerateNote: "Notiz mit KI neu schreiben"
+  noteWriting: "Notiz wird geschrieben…"
+  noteNothing: "Die KI hat nichts Nützliches für diesen Schritt gefunden."
   generateDescription: Beschreibung erstellen
   regenerateDescription: Beschreibung neu erstellen
   generatingDescription: "Wird erstellt…"
@@ -601,3 +607,18 @@ profiles:
   deleteTitle: "Profil „$1“ löschen?"
   deleteMessage: "Seine KI-, Kontext- und Exporteinstellungen werden gelöscht. Damit aufgenommene Anleitungen bleiben erhalten und nutzen das aktive Profil."
   hint: "Kontext, Sprache, KI- und Exporteinstellungen werden pro Profil gespeichert. Neue Aufnahmen nutzen das gewählte Profil, jede Anleitung behält ihr Aufnahmeprofil."
+
+proofread:
+  button: "Korrekturlesen"
+  title: "Anleitung korrekturlesen"
+  progress: "$1 von $2 geprüft…"
+  found: "$1 Korrekturen gefunden. Wählen Sie die gewünschten aus."
+  noChanges: "Keine Korrekturen nötig."
+  failed: "$1 Teile konnten nicht geprüft werden."
+  stop: "Stoppen"
+  apply: "Übernehmen ($1)"
+  applyFailed: "Korrekturen konnten nicht übernommen werden. Erneut versuchen."
+  allFailed: "Die KI hat nicht geantwortet, daher wurde nichts geprüft. Prüfen Sie die KI-Einstellungen und ob der Server läuft."
+  itemTitle: "Titel"
+  itemDescription: "Beschreibung"
+  itemNote: "Schritt $1 · Notiz"

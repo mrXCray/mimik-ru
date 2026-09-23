@@ -1,4 +1,5 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
+import type { ProofreadKind } from '@/core/capture/ai/proofread';
 import type { AiTestRequest, AiTestResult } from '@/core/capture/ai/test-model';
 import type { DOMContext } from '@/core/capture/dom/context';
 import type { CaptureStateValue } from '@/core/capture/machine';
@@ -110,6 +111,24 @@ export interface RewriteSelectionResponse {
   error?: RewriteError;
 }
 
+export interface ProofreadTextData {
+  guideId: string;
+  text: string;
+  kind: ProofreadKind;
+  /** The step the text belongs to, so its screen context goes to the AI. */
+  stepId?: string;
+}
+
+export interface GenerateStepNoteData {
+  guideId: string;
+  stepId: string;
+}
+
+export interface GuideTextResponse {
+  text?: string;
+  error?: RewriteError;
+}
+
 export interface ValidateApiKeyData {
   provider: string;
   apiKey: string;
@@ -156,6 +175,8 @@ interface MimikProtocol {
   validateApiKey(data: ValidateApiKeyData): ValidateApiKeyResponse;
   rewriteSelection(data: RewriteSelectionData): RewriteSelectionResponse;
   testAi(data: AiTestRequest): AiTestResult;
+  proofreadText(data: ProofreadTextData): GuideTextResponse;
+  generateStepNote(data: GenerateStepNoteData): GuideTextResponse;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<MimikProtocol>();

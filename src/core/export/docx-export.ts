@@ -339,6 +339,15 @@ async function buildStepTable(
     if (imageParagraph) textChildren.push(imageParagraph);
   }
 
+  if (step.note?.trim()) {
+    textChildren.push(
+      new Paragraph({
+        spacing: { before: 120 },
+        children: [new TextRun({ text: step.note.trim(), color: MUTED, size: 20, font: DOCX_FONT_FAMILY })],
+      }),
+    );
+  }
+
   return new Table({
     width: { size: dxa(CONTENT_MM), type: WidthType.DXA },
     layout: TableLayoutType.FIXED,

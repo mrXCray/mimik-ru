@@ -29,6 +29,7 @@ import { broadcastStateToPanel, setupPortListener } from '@/lib/port';
 import { recordUpdate } from '@/lib/update-notice';
 import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady } from './actor';
 import { generateDescriptionOnDemand, generateGuideMetaOnStop, settlePendingDescriptions } from './guide-meta';
+import { generateStepNote, proofreadGuideText } from './guide-text';
 import { registerNavigationListeners } from './navigation';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
 import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } from './tab-manager';
@@ -193,6 +194,8 @@ export default defineBackground(() => {
     validateApiKey(data.provider, data.apiKey, data.baseUrl, data.model, data.timeoutSec),
   );
   onMessage('testAi', ({ data }) => testAiModel(data));
+  onMessage('proofreadText', ({ data }) => proofreadGuideText(data.guideId, data.text, data.kind, data.stepId));
+  onMessage('generateStepNote', ({ data }) => generateStepNote(data.guideId, data.stepId));
 
   onMessage('rewriteSelection', ({ data }) => rewriteSelection(data.text, data.instruction, data.guideId));
 
