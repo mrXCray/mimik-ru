@@ -1,4 +1,4 @@
-import { Download, FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
+import { BookOpen, Download, FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { downloadBlob, downloadText, safeFilename } from '@/core/export/download';
@@ -17,7 +17,7 @@ interface ExportMenuProps {
   screenshots: Map<string, Screenshot>;
 }
 
-type ExportType = 'docx' | 'gif' | 'html' | 'markdown' | 'pdf' | 'video';
+type ExportType = 'bookstack' | 'docx' | 'gif' | 'html' | 'markdown' | 'pdf' | 'video';
 
 export default function ExportMenu({
   guideId,
@@ -65,6 +65,12 @@ export default function ExportMenu({
       } else if (type === 'docx') {
         const { exportGuideAsDOCX } = await import('@/core/export/docx-export');
         downloadBlob(await exportGuideAsDOCX(guide, steps, screenshots), safeFilename(guide.title, 'docx'));
+      } else if (type === 'bookstack') {
+        const { exportGuideAsBookStack } = await import('@/core/export/bookstack-export');
+        downloadBlob(
+          await exportGuideAsBookStack(guide, steps, screenshots),
+          safeFilename(`${guide.title} (BookStack)`, 'zip'),
+        );
       } else if (type === 'markdown') {
         downloadBlob(await exportGuideAsMarkdown(guide, steps, screenshots), safeFilename(guide.title, 'zip'));
       } else if (type === 'gif') {
@@ -103,6 +109,7 @@ export default function ExportMenu({
     { type: 'docx' as const, icon: FileText, label: i18n.t('exportMenu.docx') },
     { type: 'html' as const, icon: FileCode, label: i18n.t('exportMenu.html') },
     { type: 'markdown' as const, icon: FileText, label: i18n.t('exportMenu.markdown') },
+    { type: 'bookstack' as const, icon: BookOpen, label: i18n.t('exportMenu.bookstack') },
     { type: 'pdf' as const, icon: FileDown, label: i18n.t('exportMenu.pdf') },
     { type: 'gif' as const, icon: FileImage, label: i18n.t('exportMenu.gif') },
     ...(videoSupported ? [{ type: 'video' as const, icon: Video, label: i18n.t('exportMenu.video') }] : []),

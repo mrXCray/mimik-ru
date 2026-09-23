@@ -1,4 +1,4 @@
-import { FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
+import { BookOpen, FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { downloadBlob, downloadText, safeFilename } from '@/core/export/download';
@@ -33,7 +33,7 @@ interface ExportPreviewModalProps {
   screenshots: Map<string, Screenshot>;
 }
 
-type ExportFormat = 'docx' | 'gif' | 'html' | 'markdown' | 'pdf' | 'video';
+type ExportFormat = 'bookstack' | 'docx' | 'gif' | 'html' | 'markdown' | 'pdf' | 'video';
 type PreviewMode = 'document' | 'video';
 
 export default function ExportPreviewModal({ open, onOpenChange, guide, steps, screenshots }: ExportPreviewModalProps) {
@@ -163,6 +163,12 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
           onProgress: (encoded, frames) => setDownloadProgress(frames > 0 ? encoded / frames : 0),
         });
         downloadBlob(blob, safeFilename(guide.title, extension));
+      } else if (format === 'bookstack') {
+        const { exportGuideAsBookStack } = await import('@/core/export/bookstack-export');
+        downloadBlob(
+          await exportGuideAsBookStack(guide, steps, screenshots),
+          safeFilename(`${guide.title} (BookStack)`, 'zip'),
+        );
       } else {
         const { exportGuideAsMarkdown } = await import('@/core/export/markdown-export');
         downloadBlob(await exportGuideAsMarkdown(guide, steps, screenshots), safeFilename(guide.title, 'zip'));
@@ -196,6 +202,7 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
     { key: 'docx', icon: FileText, label: i18n.t('exportMenu.docx') },
     { key: 'html', icon: FileCode, label: i18n.t('exportMenu.html') },
     { key: 'markdown', icon: FileText, label: i18n.t('exportMenu.markdown') },
+    { key: 'bookstack', icon: BookOpen, label: i18n.t('exportMenu.bookstack') },
     { key: 'gif', icon: FileImage, label: i18n.t('exportMenu.gif') },
     ...(videoSupported ? [{ key: 'video' as const, icon: Video, label: i18n.t('exportMenu.video') }] : []),
   ];

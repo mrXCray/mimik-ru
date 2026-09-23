@@ -138,10 +138,20 @@ describe('buildGuideMarkdown', () => {
 
     const { markdown, images } = await buildGuideMarkdown(makeGuide(), [step], new Map([[step.id, ss]]));
 
-    expect(markdown).toContain('![export.stepLabel[01]](images/step-01.png)');
+    expect(markdown).toContain('![export.stepLabel\\[01\\]](images/step-01.png)');
     expect(markdown).not.toContain('base64');
     expect(images).toHaveLength(1);
     expect(images[0].path).toBe('images/step-01.png');
+  });
+
+  it('escapes brackets in alt text so the image link stays intact', async () => {
+    const step = makeStep();
+    const ss = makeScreenshot(step.id);
+    ss.edits = { alt: 'Menu [open]' };
+
+    const { markdown } = await buildGuideMarkdown(makeGuide(), [step], new Map([[step.id, ss]]));
+
+    expect(markdown).toContain('![Menu \\[open\\]](images/step-01.png)');
   });
 
   it('names the image file after the rendered mime type, not the stored one', async () => {

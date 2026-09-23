@@ -163,6 +163,7 @@ Share guides in whatever format fits your workflow:
 - **PDF**: print-ready, A4 portrait with auto page breaks
 - **DOCX**: open and keep editing in Word
 - **HTML**: self-contained, share anywhere, base64-embedded images
+- **BookStack**: a Portable ZIP that BookStack (v24.12+) imports as a page with all screenshots
 - **Markdown**: a zip with the `.md` file and screenshots in `images/`, ready for GitHub, internal docs, wikis
 
 All exports are generated client-side. Nothing touches a server.

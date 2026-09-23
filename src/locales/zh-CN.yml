@@ -418,6 +418,7 @@ exportMenu:
   docx: DOCX
   html: HTML
   markdown: Markdown
+  bookstack: BookStack
   pdf: PDF
   gif: GIF
   video: 视频
