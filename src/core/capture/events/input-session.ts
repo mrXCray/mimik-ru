@@ -3,7 +3,7 @@ import { logger } from '@/lib/logger';
 import { sendMessage } from '@/lib/messaging';
 import { extractDOMContext } from '../dom/context';
 import { extractElementMeta, type FrozenRect, freezeRect } from '../dom/element-meta';
-import { getFieldLabel, getFieldValue, isRedactedField, isSensitiveField } from '../dom/element-utils';
+import { getFieldLabel, getFieldValue, isRedactedField, isSensitiveField, unlabeledField } from '../dom/element-utils';
 
 export class InputSession {
   stepId: string | null = null;
@@ -46,7 +46,14 @@ export class InputSession {
       return;
     }
     const val = getFieldValue(target);
-    const desc = val ? `Type "${val}" in ${label}` : `Clear ${label}`;
+    const desc =
+      label === unlabeledField()
+        ? val
+          ? i18n.t('steps.typeValueUnlabeled', [val])
+          : i18n.t('steps.clearFieldUnlabeled')
+        : val
+          ? i18n.t('steps.typeValue', [val, label])
+          : i18n.t('steps.clearField', [label]);
     sendMessage('updateInputStep', { stepId: this.stepId, description: desc, inputValue: val || undefined }).catch(
       (err) => logger.warn('Failed to update input step', err),
     );

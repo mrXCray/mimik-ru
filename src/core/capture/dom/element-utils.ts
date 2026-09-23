@@ -1,3 +1,4 @@
+import { i18n } from '#imports';
 export const FOCUSABLE_SELECTOR =
   'a[href], button, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="radio"], [tabindex], [contenteditable="true"]';
 
@@ -103,6 +104,9 @@ function slottedLabel(el: Element): string | null {
   );
 }
 
+/** What getFieldLabel returns when a field has no usable label. */
+export const unlabeledField = () => i18n.t('steps.textField');
+
 export function getFieldLabel(el: HTMLElement): string {
   const ariaLabel = el.getAttribute('aria-label');
   if (ariaLabel) return ariaLabel;
@@ -139,5 +143,5 @@ export function getFieldLabel(el: HTMLElement): string {
   const name = el.getAttribute('name');
   if (name && !/[-_]test|[-_]id|[-_]key/i.test(name)) return name;
 
-  return 'text field';
+  return unlabeledField();
 }
