@@ -1,6 +1,16 @@
 import { defineConfig } from "wxt";
 import tailwindcss from "@tailwindcss/vite";
 
+// Mimik RU Extra, distributed by AFI Distribution.
+const PUBLISHER = "AFI Distribution";
+const CONTACT_EMAIL = "dm@afi-d.ru";
+const HOMEPAGE_URL = "https://github.com/mrXCray/mimik-ru";
+// Public half of the signing key: pins the Chrome/Brave extension ID to
+// iifnohaefakanhlkanmfmkdankejanek wherever the unpacked folder lives, so
+// saved guides survive moving or re-extracting it.
+const CHROME_PUBLIC_KEY =
+  "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAt+9ilpXTmbhbIwJNvqpdJgSvsb6kx7eqGQqjAtdqIm237DCJrlSLwNMjQ3mUI8+bjO/RcdFr1KMHO8ruDHZcyiBASbQPatTT0gJuPz1/wz8P6d2gQBW5bXCmb7XjmUV0rgHA7Acs1XU4k0ldj7BfJ2sOQr6VvVwBJdsSNYvarfWPWZNQ4lFS90pZeW6Fr4jvtl8DC/n+RrQU/mLOQ6LmxK3KwG66sPgo5ENAYiip8JkuAlp1L6KvL6/jw4VhyEyJMxlcKJR1JgGjErUrkuBkLUmgMvMRsP1ttjTwkmsnDXrPnQ/lQGm4TUD8U4IjQUl3r8X0n4uNUigGHR7VoYdYwQIDAQAB";
+
 export default defineConfig({
   modules: ["@wxt-dev/module-react", "@wxt-dev/i18n/module"],
   srcDir: "src",
@@ -43,6 +53,10 @@ export default defineConfig({
       name: "__MSG_app_store_title__",
       description: "__MSG_app_description__",
       default_locale: "en",
+      homepage_url: HOMEPAGE_URL,
+      ...(isFirefox
+        ? { author: PUBLISHER, developer: { name: PUBLISHER, url: HOMEPAGE_URL } }
+        : { author: { email: CONTACT_EMAIL }, key: CHROME_PUBLIC_KEY }),
       permissions: [
         "storage",
         "activeTab",
@@ -72,8 +86,8 @@ export default defineConfig({
             },
             browser_specific_settings: {
               gecko: {
-                // Forks set MIMIK_GECKO_ID so their builds can be signed on AMO and sit beside the store add-on.
-                id: process.env.MIMIK_GECKO_ID || "mimik@westpoint.io",
+                // Own ID so this build can be signed on AMO and sits beside the upstream add-on.
+                id: process.env.MIMIK_GECKO_ID || "mimik-ru@afi-d.ru",
                 strict_min_version: "128.0",
                 data_collection_permissions: {
                   required: ["websiteActivity"],
