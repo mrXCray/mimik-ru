@@ -2,13 +2,19 @@ name: Release (RU Extra)
 
 # Builds the Chrome and Firefox packages for a tag and publishes them as a GitHub
 # release, with the notes from .github/release-notes/<tag>.md followed by
-# INSTALL.ru.md. If AMO_JWT_ISSUER / AMO_JWT_SECRET secrets are set, the
+# INSTALL.ru.md. Runs on a pushed v*-ru* tag, on a manual run, or when a push to
+# main adds or changes .github/release-notes/<tag>.md (the tag is then created
+# on that commit). If AMO_JWT_ISSUER / AMO_JWT_SECRET secrets are set, the
 # Firefox build is also signed on addons.mozilla.org (unlisted) and attached.
 
 on:
   push:
     tags:
       - "v*-ru*"
+    branches:
+      - main
+    paths:
+      - ".github/release-notes/*.md"
   workflow_dispatch:
     inputs:
       tag:
@@ -32,7 +38,7 @@ jobs:
     name: Build and publish
     runs-on: ubuntu-latest
     env:
-      TAG: ${{ inputs.tag || github.ref_name }}
+      TAG: ${{ inputs.tag || (github.ref_type == 'tag' && github.ref_name || '') }}
       # Own add-on ID: AMO will not sign a build under the upstream ID, and it
       # lets this build sit next to the store version of Mimik.
       MIMIK_GECKO_ID: mimik-ru@mrxcray.github.io
@@ -44,6 +50,14 @@ jobs:
         with:
           # A pushed tag builds itself; a manual run builds `ref` and tags it on publish.
           ref: ${{ inputs.ref || github.ref }}
+          fetch-depth: 2
+
+      - name: Pick the tag from changed release notes
+        if: env.TAG == ''
+        run: |
+          notes=$(git diff --name-only HEAD^ HEAD -- '.github/release-notes/*.md' | head -n 1)
+          [ -n "$notes" ] || { echo "No release notes changed"; exit 1; }
+          echo "TAG=$(basename "$notes" .md)" >> "$GITHUB_ENV"
 
       - uses: pnpm/action-setup@v5
 
