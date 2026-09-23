@@ -1,3 +1,19 @@
+# ATTENTION
+
+It is a dirty fork, assisted with Claude, with:
+- added ru-l10n
+- added per-project profiles
+- added LLM preprompt
+- added LLM language settings
+- changed markdown export into (markdown + images).zip
+- added export (markdown + images).zip constructed to import into BookStack
+
+Use it on your own risk.
+-------
+ORIGINAL README BELOW:
+-------
+
+
 <div align="center"><a name="readme-top"></a>
 
 <img src="public/mascot.svg" width="140" height="140" alt="Mimik mascot" />
