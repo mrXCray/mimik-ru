@@ -1,5 +1,6 @@
 import { i18n } from '#imports';
 import { resolveAiKey } from '@/core/capture/ai/keys';
+import { loadAiLimits, secondsToMs } from '@/core/capture/ai/limits';
 import { generateGuideMeta } from '@/core/capture/ai/meta';
 import { AI_PROVIDERS } from '@/core/capture/ai/models';
 import { actionSteps } from '@/core/guides/blocks';
@@ -40,8 +41,8 @@ async function resolveGuideMetaInputs(guideId: string): Promise<GuideMetaInputs>
     'aiModel',
     'aiBaseUrl',
   ]);
-  const { provider, apiKey } = resolveAiKey(settings);
-  if (!apiKey) return { ok: false, reason: 'no-api-key' };
+  const { provider, apiKey, usable } = resolveAiKey(settings);
+  if (!usable) return { ok: false, reason: 'no-api-key' };
 
   const steps = actionSteps(await getStepsForGuide(guideId));
   const described = steps.filter((s) => s.description).map((s) => ({ description: s.description, url: s.url }));
@@ -68,7 +69,8 @@ async function applyFallbackTitle(guideId: string) {
 
 export async function settlePendingDescriptions(guideId: string) {
   await whenNarrationSettled();
-  await drainDescriptions(guideId);
+  const { stopWaitSec } = await loadAiLimits(await guideProfileId(guideId));
+  await drainDescriptions(guideId, secondsToMs(stopWaitSec));
   const pending = (await getStepsForGuide(guideId)).filter((s) => s.aiPending);
   await Promise.all(pending.map((s) => clearStepAiPending(s.id)));
 }

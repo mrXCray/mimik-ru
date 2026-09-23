@@ -1,4 +1,4 @@
-import { type AIProviderKey, isProviderKey, providerOrDefault } from './models';
+import { AI_PROVIDERS, type AIProviderKey, isCustomBaseUrl, isProviderKey, providerOrDefault } from './models';
 
 export type AIApiKeys = Partial<Record<AIProviderKey, string>>;
 
@@ -33,12 +33,27 @@ export function withKeyFor(keys: AIApiKeys, provider: AIProviderKey, apiKey: str
   return next;
 }
 
-export const AI_KEY_SETTINGS = ['aiApiKeys', 'aiApiKey', 'aiProvider'] as const;
+export const AI_KEY_SETTINGS = ['aiApiKeys', 'aiApiKey', 'aiProvider', 'aiBaseUrl'] as const;
 
-export function resolveAiKey(stored: { aiApiKeys?: unknown; aiApiKey?: unknown; aiProvider?: unknown }): {
+/** Sent when a self-hosted server needs no key; llama.cpp, Ollama and LM Studio ignore it. */
+export const NO_KEY_PLACEHOLDER = 'sk-no-key-required';
+
+export function resolveAiKey(stored: {
+  aiApiKeys?: unknown;
+  aiApiKey?: unknown;
+  aiProvider?: unknown;
+  aiBaseUrl?: unknown;
+}): {
   provider: AIProviderKey;
   apiKey: string;
+  /** AI is on: a key is set, or requests go to the user's own server, which may need none. */
+  usable: boolean;
 } {
   const provider = providerOrDefault(stored.aiProvider);
-  return { provider, apiKey: keyFor(migrateApiKeys(stored), provider) };
+  const apiKey = keyFor(migrateApiKeys(stored), provider);
+  const ownServer = isCustomBaseUrl(
+    AI_PROVIDERS[provider],
+    typeof stored.aiBaseUrl === 'string' ? stored.aiBaseUrl : undefined,
+  );
+  return { provider, apiKey, usable: Boolean(apiKey) || ownServer };
 }

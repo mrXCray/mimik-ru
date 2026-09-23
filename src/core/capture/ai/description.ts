@@ -1,6 +1,7 @@
 import { generateText } from 'ai';
 import type { DOMContext } from '../dom/context';
 import { serializeDOMContext } from '../dom/context';
+import { generationLimits, loadAiLimits } from './limits';
 import { applyPromptSettings, loadPromptSettings } from './prompt-settings';
 import { STEP_DESCRIPTION_PROMPT } from './prompts';
 import { createModel } from './provider';
@@ -20,7 +21,7 @@ export async function getAIDescription(
       STEP_DESCRIPTION_PROMPT.replace('{{context}}', serializeDOMContext(domContext)),
       settings,
     ),
-    maxOutputTokens: 50,
+    ...generationLimits(await loadAiLimits(profileId)),
   });
   return text.trim().replace(/^"|"$/g, '') || null;
 }

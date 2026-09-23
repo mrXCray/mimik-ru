@@ -60,18 +60,31 @@ describe('keyFor and withKeyFor', () => {
 describe('resolveAiKey', () => {
   it('hands back the key belonging to the selected provider, never another', () => {
     const stored = { aiApiKeys: { openai: 'sk-openai', anthropic: 'ak-anthropic' }, aiProvider: 'anthropic' };
-    expect(resolveAiKey(stored)).toEqual({ provider: 'anthropic', apiKey: 'ak-anthropic' });
+    expect(resolveAiKey(stored)).toEqual({ provider: 'anthropic', apiKey: 'ak-anthropic', usable: true });
   });
 
   it('reports no key rather than a neighbour key when the selected provider has none', () => {
     const stored = { aiApiKeys: { openai: 'sk-openai' }, aiProvider: 'openrouter' };
-    expect(resolveAiKey(stored)).toEqual({ provider: 'openrouter', apiKey: '' });
+    expect(resolveAiKey(stored)).toEqual({ provider: 'openrouter', apiKey: '', usable: false });
   });
 
   it('falls back to openai for an unknown stored provider', () => {
     expect(resolveAiKey({ aiApiKeys: { openai: 'sk-a' }, aiProvider: 'nope' })).toEqual({
       provider: 'openai',
       apiKey: 'sk-a',
+      usable: true,
     });
+  });
+
+  it("treats the user's own server as usable without any key", () => {
+    expect(resolveAiKey({ aiProvider: 'openai', aiBaseUrl: 'http://127.0.0.1:8080/v1' })).toEqual({
+      provider: 'openai',
+      apiKey: '',
+      usable: true,
+    });
+  });
+
+  it("still needs a key for the provider's own endpoint", () => {
+    expect(resolveAiKey({ aiProvider: 'openai', aiBaseUrl: 'https://api.openai.com/v1/' }).usable).toBe(false);
   });
 });

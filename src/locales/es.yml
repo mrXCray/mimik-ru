@@ -89,7 +89,7 @@ settings:
   modelCustom: Modelo personalizado
   baseUrl: URL base
   useOwnServer: Usar mi propio servidor
-  ownServerHintOpenai: "Funciona con Ollama, LM Studio, vLLM o cualquier servidor compatible con OpenAI."
+  ownServerHintOpenai: "Funciona con llama.cpp, Ollama, LM Studio, vLLM o cualquier servidor compatible con OpenAI."
   ownServerHintAnthropic: "Funciona con un proxy LiteLLM o cualquier servidor compatible con Anthropic."
   apiKey: Clave API
   showKey: Mostrar clave
@@ -100,6 +100,19 @@ settings:
   prePromptClear: "Quitar contexto del proyecto"
   prePromptPlaceholder: "Describe el producto, el público, los términos y el estilo de redacción. Se admite Markdown."
   prePromptHint: "Se envía con cada solicitud a la IA: descripciones de pasos, títulos y reescrituras."
+  apiKeyOptional: "Opcional para tu propio servidor"
+  testModel: "Probar"
+  testHint: "Envía una solicitud real de descripción de paso con los ajustes de arriba."
+  testRunning: "Enviando solicitud de prueba…"
+  testOk: "Respuesta en $1 s:"
+  testEmpty: "El modelo devolvió una respuesta vacía en $1 s. Si es un modelo de razonamiento, desactívalo (llama.cpp: --reasoning-budget 0) o sube el límite de tokens."
+  testTimeout: "Sin respuesta en $1 s. Aumenta el tiempo de espera o revisa el servidor."
+  testFailed: "Error tras $1 s: $2"
+  limits: "Límites"
+  maxOutputTokens: "Tokens máx. de respuesta"
+  requestTimeout: "Tiempo de espera, s"
+  stopWait: "Espera tras grabar, s"
+  limitsHint: "0 significa sin límite. La espera es cuánto se aguardan las descripciones de pasos al detener la grabación."
   voiceNarration: "Narración por voz"
   voiceUsingAiKey: "No hay clave de voz, así que Mimik usa la clave de OpenAI de Descripciones con IA de arriba."
   aiNoKey: "No hay clave de API, así que los pasos usarán descripciones básicas por reglas."

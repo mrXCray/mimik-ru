@@ -17,8 +17,8 @@ export async function generateAiDescription(guideId: string, domContext: DOMCont
     'aiModel',
     'aiBaseUrl',
   ]);
-  const { provider, apiKey } = resolveAiKey(settings);
-  if (!apiKey) return undefined;
+  const { provider, apiKey, usable } = resolveAiKey(settings);
+  if (!usable) return undefined;
 
   const model = (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel;
   try {

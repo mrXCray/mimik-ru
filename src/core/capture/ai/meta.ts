@@ -1,5 +1,6 @@
 import { generateObject, generateText, jsonSchema } from 'ai';
 import { logger } from '@/lib/logger';
+import { generationLimits, loadAiLimits } from './limits';
 import { applyPromptSettings, loadPromptSettings } from './prompt-settings';
 import { GUIDE_META_JSON_SUFFIX, GUIDE_META_PROMPT } from './prompts';
 import { createModel } from './provider';
@@ -69,13 +70,14 @@ export async function generateGuideMeta(
     await loadPromptSettings(profileId),
   );
   const aiModel = createModel(provider, model, apiKey, baseUrl);
+  const limits = await loadAiLimits(profileId);
 
   try {
     const { object } = await generateObject({
       model: aiModel,
       schema: guideMetaSchema,
       prompt,
-      maxOutputTokens: 200,
+      ...generationLimits(limits),
     });
     return toGuideMeta(object.title, object.description);
   } catch (err) {
@@ -86,7 +88,7 @@ export async function generateGuideMeta(
     const { text } = await generateText({
       model: aiModel,
       prompt: prompt + GUIDE_META_JSON_SUFFIX,
-      maxOutputTokens: 200,
+      ...generationLimits(limits),
     });
     return parseGuideMeta(text);
   } catch (err) {

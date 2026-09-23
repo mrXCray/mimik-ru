@@ -63,7 +63,7 @@ async function takeScreenshot(
 }
 
 async function tryAIDescription(guideId: string, stepId: string, domContext: DOMContext) {
-  if (!resolveAiKey(await settingsForGuide(guideId, AI_KEY_SETTINGS)).apiKey) return;
+  if (!resolveAiKey(await settingsForGuide(guideId, AI_KEY_SETTINGS)).usable) return;
   try {
     await clearStepAiPending(stepId, await generateAiDescription(guideId, domContext));
   } catch (err) {
@@ -85,7 +85,7 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
   const screenshotId = await takeScreenshot(guideId, stepId, data.elementMeta);
 
   const narrationCapturing = getVoiceUpdate().phase === 'recording';
-  const hasAiKey = !!resolveAiKey(await settingsForGuide(guideId, AI_KEY_SETTINGS)).apiKey;
+  const hasAiKey = resolveAiKey(await settingsForGuide(guideId, AI_KEY_SETTINGS)).usable;
   const willUseAI = shouldQueueAiDescription({
     action: data.action,
     hasDomContext: !!data.domContext,

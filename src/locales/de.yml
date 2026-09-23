@@ -99,7 +99,7 @@ settings:
   modelCustom: Eigenes Modell
   baseUrl: Basis-URL
   useOwnServer: Eigenen Server verwenden
-  ownServerHintOpenai: "Funktioniert mit Ollama, LM Studio, vLLM oder jedem OpenAI-kompatiblen Server."
+  ownServerHintOpenai: "Funktioniert mit llama.cpp, Ollama, LM Studio, vLLM oder jedem OpenAI-kompatiblen Server."
   ownServerHintAnthropic: "Funktioniert mit einem LiteLLM-Proxy oder jedem Anthropic-kompatiblen Server."
   provider: Anbieter
   model: Modell
@@ -112,6 +112,19 @@ settings:
   prePromptClear: "Projektkontext entfernen"
   prePromptPlaceholder: "Beschreibe Produkt, Zielgruppe, Begriffe und Schreibstil. Markdown ist erlaubt."
   prePromptHint: "Wird bei jeder KI-Anfrage mitgesendet: Schrittbeschreibungen, Titel und Umformulierungen."
+  apiKeyOptional: "Für den eigenen Server optional"
+  testModel: "Testen"
+  testHint: "Sendet eine echte Schrittbeschreibungs-Anfrage mit den Einstellungen oben."
+  testRunning: "Testanfrage wird gesendet…"
+  testOk: "Antwort in $1 s:"
+  testEmpty: "Das Modell lieferte in $1 s eine leere Antwort. Bei einem Reasoning-Modell das Reasoning abschalten (llama.cpp: --reasoning-budget 0) oder das Token-Limit erhöhen."
+  testTimeout: "Keine Antwort innerhalb von $1 s. Timeout erhöhen oder Server prüfen."
+  testFailed: "Fehler nach $1 s: $2"
+  limits: "Limits"
+  maxOutputTokens: "Max. Antwort-Tokens"
+  requestTimeout: "Anfrage-Timeout, s"
+  stopWait: "Warten nach Aufnahme, s"
+  limitsHint: "0 bedeutet kein Limit. Das Warten bestimmt, wie lange nach dem Stoppen auf Schrittbeschreibungen gewartet wird."
   voiceNarration: Sprachkommentar
   voiceUsingAiKey: "Es ist kein Sprach-Schlüssel gesetzt, daher nutzt Mimik den OpenAI-Schlüssel aus den KI-Beschreibungen oben."
   aiNoKey: "Kein API-Schlüssel gesetzt, daher verwenden Schritte einfache regelbasierte Beschreibungen."

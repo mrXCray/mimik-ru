@@ -6,6 +6,8 @@ import {
   ChevronRight,
   EyeOff,
   FileText,
+  FlaskConical,
+  Gauge,
   Globe,
   ImageIcon,
   Mic,
@@ -20,6 +22,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
 import { type AIApiKeys, keyFor, migrateApiKeys, withKeyFor } from '@/core/capture/ai/keys';
+import { AI_LIMIT_KEYS, DEFAULT_AI_LIMITS, resolveAiLimits } from '@/core/capture/ai/limits';
 import {
   AI_PROVIDERS,
   type AIProviderKey,
@@ -43,6 +46,7 @@ import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/components/ui/select';
+import { AiTestNote, useAiTest } from '@/ui/shared/ai-test';
 import ColorPicker from '@/ui/shared/ColorPicker';
 import { KeyStatusNote, KeyWarningNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
@@ -61,6 +65,26 @@ const FOOTER_PRESETS = () => [
   i18n.t('settings.footerPresetConfidential'),
   i18n.t('settings.footerPresetNoDistribute'),
 ];
+
+function LimitInput({ label, value, onChange }: { label: string; value: number; onChange: (next: number) => void }) {
+  return (
+    <label className="block min-w-0">
+      <span className="block text-[10px] text-muted-foreground leading-tight mb-0.5 min-h-[2.5em]">{label}</span>
+      <Input
+        type="number"
+        min={0}
+        step={1}
+        inputMode="numeric"
+        value={value}
+        onChange={(e) => {
+          const next = Number.parseInt(e.target.value, 10);
+          onChange(Number.isFinite(next) && next > 0 ? next : 0);
+        }}
+        className="h-8 text-[13px] rounded-lg border-border tabular-nums"
+      />
+    </label>
+  );
+}
 
 export default function SettingsView(props: SettingsViewProps) {
   const profiles = useProfiles();
@@ -87,6 +111,10 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
   const saveTimer = useRef<number | undefined>(undefined);
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>(() => defaultAiLanguage(uiLocale()));
   const [aiPrePrompt, setAiPrePrompt] = useState('');
+  const [aiMaxOutputTokens, setAiMaxOutputTokens] = useState(DEFAULT_AI_LIMITS.maxOutputTokens);
+  const [aiRequestTimeoutSec, setAiRequestTimeoutSec] = useState(DEFAULT_AI_LIMITS.requestTimeoutSec);
+  const [aiStopWaitSec, setAiStopWaitSec] = useState(DEFAULT_AI_LIMITS.stopWaitSec);
+  const aiTest = useAiTest();
   const prePromptInputRef = useRef<HTMLInputElement>(null);
   const [voiceProvider, setVoiceProvider] = useState<VoiceProvider>('openai');
   const [voiceApiKey, setVoiceApiKey] = useState('');
@@ -115,6 +143,7 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
         'aiBaseUrl',
         'aiLanguage',
         'aiPrePrompt',
+        ...AI_LIMIT_KEYS,
         'blurPresets',
         'voiceProvider',
         'voiceApiKey',
@@ -137,6 +166,10 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
         }
         if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
         if (typeof result.aiPrePrompt === 'string') setAiPrePrompt(result.aiPrePrompt);
+        const limits = resolveAiLimits(result);
+        setAiMaxOutputTokens(limits.maxOutputTokens);
+        setAiRequestTimeoutSec(limits.requestTimeoutSec);
+        setAiStopWaitSec(limits.stopWaitSec);
         if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
         setVoiceProvider((result.voiceProvider as VoiceProvider) || 'openai');
         if (result.voiceApiKey) setVoiceApiKey(result.voiceApiKey as string);
@@ -157,6 +190,9 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
     aiBaseUrl: baseUrl,
     aiLanguage,
     aiPrePrompt,
+    aiMaxOutputTokens,
+    aiRequestTimeoutSec,
+    aiStopWaitSec,
     blurPresets,
     voiceProvider,
     voiceApiKey,
@@ -334,7 +370,7 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
               <SelectContent>
                 {providerConfig.models.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
-                    {m.label}
+                    {m.id === CUSTOM_MODEL_VALUE ? i18n.t('settings.modelCustom') : m.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -363,15 +399,16 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
                   setApiKeys((prev) => withKeyFor(prev, provider, next));
                   aiKeyCheck.reset();
                 }}
-                placeholder="sk-..."
+                placeholder={ownServer ? i18n.t('settings.apiKeyOptional') : 'sk-...'}
                 className="h-8 text-[13px] rounded-lg border-border"
               />
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!apiKey || aiKeyCheck.status === 'checking'}
+                disabled={(!apiKey && !ownServer) || aiKeyCheck.status === 'checking'}
                 onClick={() => {
-                  if (aiKeyCheck.status !== 'checking') void aiKeyCheck.check(provider, apiKey, baseUrl, model);
+                  if (aiKeyCheck.status !== 'checking')
+                    void aiKeyCheck.check(provider, apiKey, baseUrl, model, aiRequestTimeoutSec);
                 }}
                 className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
               >
@@ -381,7 +418,7 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
             <KeyStatusNote status={aiKeyCheck.status} />
             <KeyWarningNote warning={aiKeyCheck.warning} />
             {aiKeyCheck.models && <ModelList models={aiKeyCheck.models} />}
-            {!apiKey.trim() && (
+            {!apiKey.trim() && !ownServer && (
               <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-destructive leading-relaxed" role="alert">
                 <TriangleAlert size={11} className="shrink-0 mt-0.5" />
                 <span>{i18n.t('settings.aiNoKey')}</span>
@@ -420,6 +457,7 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
                   onChange={(e) => {
                     setBaseUrl(e.target.value);
                     aiKeyCheck.reset();
+                    aiTest.reset();
                   }}
                   placeholder={providerConfig.defaultBaseUrl}
                   aria-label={i18n.t('settings.baseUrl')}
@@ -432,6 +470,32 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
                       : 'settings.ownServerHintOpenai',
                   )}
                 </p>
+                <div className="flex items-center gap-2 pt-0.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!baseUrl.trim() || !model.trim() || aiTest.state.status === 'running'}
+                    onClick={() =>
+                      void aiTest.run({
+                        provider,
+                        model,
+                        apiKey,
+                        baseUrl,
+                        locale: aiLanguage,
+                        prePrompt: aiPrePrompt,
+                        maxOutputTokens: aiMaxOutputTokens,
+                        requestTimeoutSec: aiRequestTimeoutSec,
+                        stopWaitSec: aiStopWaitSec,
+                      })
+                    }
+                    className="h-7 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
+                  >
+                    <FlaskConical size={12} />
+                    {i18n.t('settings.testModel')}
+                  </Button>
+                  <span className="text-[10px] text-muted-foreground leading-snug">{i18n.t('settings.testHint')}</span>
+                </div>
+                <AiTestNote state={aiTest.state} timeoutSec={aiRequestTimeoutSec} />
               </div>
             )}
           </div>
@@ -505,6 +569,27 @@ function SettingsBody({ onBack, profiles }: SettingsViewProps & { profiles: Prof
                 {aiPrePrompt.length.toLocaleString()} / {MAX_PRE_PROMPT_CHARS.toLocaleString()}
               </span>
             </p>
+          </div>
+
+          <div>
+            <span className="block text-[11px] font-semibold text-foreground mb-1">
+              <Gauge size={11} className="inline mr-1 -mt-px" />
+              {i18n.t('settings.limits')}
+            </span>
+            <div className="grid grid-cols-3 gap-1.5">
+              <LimitInput
+                label={i18n.t('settings.maxOutputTokens')}
+                value={aiMaxOutputTokens}
+                onChange={setAiMaxOutputTokens}
+              />
+              <LimitInput
+                label={i18n.t('settings.requestTimeout')}
+                value={aiRequestTimeoutSec}
+                onChange={setAiRequestTimeoutSec}
+              />
+              <LimitInput label={i18n.t('settings.stopWait')} value={aiStopWaitSec} onChange={setAiStopWaitSec} />
+            </div>
+            <p className="mt-1 text-[10px] text-muted-foreground leading-relaxed">{i18n.t('settings.limitsHint')}</p>
           </div>
         </div>
 

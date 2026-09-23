@@ -186,12 +186,12 @@ describe('description queue', () => {
     await expect(drain.promise).resolves.toBeUndefined();
   });
 
-  it('gives up after the twenty second cap when a task never settles', async () => {
+  it('gives up after the given wait when a task never settles', async () => {
     vi.useFakeTimers();
     const stuck = job();
     queueDescription('guide-a', stuck.run);
 
-    const drain = watch(drainDescriptions('guide-a'));
+    const drain = watch(drainDescriptions('guide-a', 20_000));
     await vi.advanceTimersByTimeAsync(19_999);
     expect(drain.done()).toBe(false);
 
@@ -206,7 +206,7 @@ describe('description queue', () => {
     const only = job();
     queueDescription('guide-a', only.run);
 
-    const drain = watch(drainDescriptions('guide-a'));
+    const drain = watch(drainDescriptions('guide-a', 20_000));
     await flushMicrotasks();
     expect(vi.getTimerCount()).toBeGreaterThan(0);
 
@@ -215,5 +215,18 @@ describe('description queue', () => {
     await flushMicrotasks();
 
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('waits without a cap when no wait is given', async () => {
+    vi.useFakeTimers();
+    const slow = job();
+    queueDescription('guide-a', slow.run);
+
+    const drain = watch(drainDescriptions('guide-a'));
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
+    expect(drain.done()).toBe(false);
+
+    slow.settle();
+    await expect(drain.promise).resolves.toBeUndefined();
   });
 });

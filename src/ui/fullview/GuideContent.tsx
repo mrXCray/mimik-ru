@@ -138,7 +138,7 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
   }, [data, guideId, setGuideExportData]);
 
   useEffect(() => {
-    settingsForGuide(guideId, AI_KEY_SETTINGS).then((s) => setHasApiKey(Boolean(resolveAiKey(s).apiKey)));
+    settingsForGuide(guideId, AI_KEY_SETTINGS).then((s) => setHasApiKey(resolveAiKey(s).usable));
   }, [guideId]);
 
   const handleTitleBlur = useCallback(async () => {

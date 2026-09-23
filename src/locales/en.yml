@@ -89,7 +89,7 @@ settings:
   modelCustom: Custom model
   baseUrl: Base URL
   useOwnServer: Use my own server
-  ownServerHintOpenai: "Works with Ollama, LM Studio, vLLM, or any OpenAI-compatible server."
+  ownServerHintOpenai: "Works with llama.cpp, Ollama, LM Studio, vLLM, or any OpenAI-compatible server."
   ownServerHintAnthropic: "Works with a LiteLLM proxy or any Anthropic-compatible server."
   apiKey: API Key
   showKey: Show key
@@ -100,6 +100,19 @@ settings:
   prePromptClear: "Remove project context"
   prePromptPlaceholder: "Describe the product, audience, terms and writing style. Markdown is fine."
   prePromptHint: "Sent with every AI request: step descriptions, titles and rewrites."
+  apiKeyOptional: "Optional for your own server"
+  testModel: "Test"
+  testHint: "Sends a real step-description request with the settings above."
+  testRunning: "Sending a test request…"
+  testOk: "Answered in $1 s:"
+  testEmpty: "The model returned an empty answer in $1 s. If it is a reasoning model, turn reasoning off (for llama.cpp: --reasoning-budget 0) or raise the token limit."
+  testTimeout: "No answer within $1 s. Raise the request timeout or check the server."
+  testFailed: "Failed after $1 s: $2"
+  limits: "Limits"
+  maxOutputTokens: "Max answer tokens"
+  requestTimeout: "Request timeout, s"
+  stopWait: "Wait after recording, s"
+  limitsHint: "0 means no limit. The wait is how long stopping a recording waits for step descriptions before writing the title."
   voiceNarration: Voice Narration
   voiceUsingAiKey: "No voice key is set, so Mimik uses the OpenAI key from AI Descriptions above."
   aiNoKey: "No API key is set, so steps will use plain rule-based descriptions."

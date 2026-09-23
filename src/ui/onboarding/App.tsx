@@ -256,7 +256,7 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                 <SelectContent>
                   {providerConfig.models.map((m) => (
                     <SelectItem key={m.id} value={m.id}>
-                      {m.label}
+                      {m.id === CUSTOM_MODEL_VALUE ? i18n.t('settings.modelCustom') : m.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -281,14 +281,14 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
               <SecretInput
                 value={apiKey}
                 onChange={handleApiKeyChange}
-                placeholder="sk-..."
+                placeholder={ownServer ? i18n.t('settings.apiKeyOptional') : 'sk-...'}
                 className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
                 buttonClassName="right-3"
               />
               <div className="flex items-center gap-3 mt-2">
                 <button
                   type="button"
-                  disabled={!apiKey || aiKeyCheck.status === 'checking'}
+                  disabled={(!apiKey && !ownServer) || aiKeyCheck.status === 'checking'}
                   onClick={() => {
                     if (aiKeyCheck.status !== 'checking') void aiKeyCheck.check(provider, apiKey, baseUrl, model);
                   }}

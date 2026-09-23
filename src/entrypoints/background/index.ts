@@ -1,5 +1,6 @@
 import { browser, defineBackground } from '#imports';
 import { rewriteSelection } from '@/core/capture/ai/rewrite';
+import { testAiModel } from '@/core/capture/ai/test-model';
 import { validateApiKey } from '@/core/capture/ai/validate';
 import { stepRequiresManual } from '@/core/guideme/manual';
 import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
@@ -188,7 +189,10 @@ export default defineBackground(() => {
 
   onMessage('generateGuideDescription', ({ data }) => generateDescriptionOnDemand(data.guideId));
 
-  onMessage('validateApiKey', ({ data }) => validateApiKey(data.provider, data.apiKey, data.baseUrl, data.model));
+  onMessage('validateApiKey', ({ data }) =>
+    validateApiKey(data.provider, data.apiKey, data.baseUrl, data.model, data.timeoutSec),
+  );
+  onMessage('testAi', ({ data }) => testAiModel(data));
 
   onMessage('rewriteSelection', ({ data }) => rewriteSelection(data.text, data.instruction, data.guideId));
 

@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { NO_KEY_PLACEHOLDER } from './keys';
 import {
   type AIProtocol,
   type AIProviderConfig,
@@ -14,7 +15,10 @@ export type KeyValidation =
   | { valid: true; models?: string[]; warning?: KeyWarning }
   | { valid: false; reason: 'rejected' | 'network' | 'model-required' | 'model-invalid'; models?: string[] };
 
-const REQUEST_TIMEOUT_MS = 10_000;
+const DEFAULT_TIMEOUT_MS = 10_000;
+
+/** Undefined waits as long as the server needs. */
+const timeoutSignal = (timeoutMs?: number) => (timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined);
 
 const PROTOCOL_HEADERS: Record<AIProtocol, (key: string) => Record<string, string>> = {
   openai: (key) => ({ Authorization: `Bearer ${key}` }),
@@ -42,11 +46,15 @@ function parseModelIds(body: unknown): string[] | undefined {
   return models.length > 0 ? models : undefined;
 }
 
-async function fetchModelsFromUrl(url: string, headers: Record<string, string>): Promise<string[] | undefined> {
+async function fetchModelsFromUrl(
+  url: string,
+  headers: Record<string, string>,
+  timeoutMs?: number,
+): Promise<string[] | undefined> {
   try {
     const res = await fetch(url, {
       headers,
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      signal: timeoutSignal(timeoutMs),
     });
     if (!res.ok) return undefined;
     return parseModelIds(await res.json().catch(() => null));
@@ -58,11 +66,11 @@ async function fetchModelsFromUrl(url: string, headers: Record<string, string>):
 
 type AuthProbe = { valid: true; body: unknown } | { valid: false; reason: 'rejected' | 'network' };
 
-async function probeAuth(url: string, headers: Record<string, string>): Promise<AuthProbe> {
+async function probeAuth(url: string, headers: Record<string, string>, timeoutMs?: number): Promise<AuthProbe> {
   try {
     const res = await fetch(url, {
       headers,
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      signal: timeoutSignal(timeoutMs),
     });
     if (res.ok) return { valid: true, body: await res.json().catch(() => null) };
     if (res.status === 401 || res.status === 403) return { valid: false, reason: 'rejected' };
@@ -73,8 +81,8 @@ async function probeAuth(url: string, headers: Record<string, string>): Promise<
   }
 }
 
-async function checkCatalog(url: string, headers: Record<string, string>): Promise<KeyValidation> {
-  const probe = await probeAuth(url, headers);
+async function checkCatalog(url: string, headers: Record<string, string>, timeoutMs?: number): Promise<KeyValidation> {
+  const probe = await probeAuth(url, headers, timeoutMs);
   if (!probe.valid) return probe;
   const models = parseModelIds(probe.body);
   return models ? { valid: true, models } : { valid: true };
@@ -95,6 +103,7 @@ async function probeWithInference(
   baseUrl: string,
   model: string,
   headers: Record<string, string>,
+  timeoutMs?: number,
 ): Promise<boolean> {
   const base = normalizeBaseUrl(baseUrl);
   const url = protocol === 'anthropic' ? `${base}/messages` : `${base}/chat/completions`;
@@ -107,7 +116,7 @@ async function probeWithInference(
       method: 'POST',
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      signal: timeoutSignal(timeoutMs),
     });
     return res.ok;
   } catch {
@@ -120,23 +129,25 @@ async function validateCustomServer(
   apiKey: string,
   baseUrl: string,
   model?: string,
+  timeoutMs?: number,
 ): Promise<KeyValidation> {
-  const headers = PROTOCOL_HEADERS[config.protocol](apiKey);
+  // A self-hosted server may run without a key at all.
+  const headers = PROTOCOL_HEADERS[config.protocol](apiKey || NO_KEY_PLACEHOLDER);
   const base = normalizeBaseUrl(baseUrl);
   const catalogUrl = `${base}/models`;
 
   const selectedModel = model?.trim();
   if (!selectedModel) {
-    const models = await fetchModelsFromUrl(catalogUrl, headers);
+    const models = await fetchModelsFromUrl(catalogUrl, headers, timeoutMs);
     return models ? { valid: false, reason: 'model-required', models } : { valid: false, reason: 'model-required' };
   }
 
-  if (await probeWithInference(config.protocol, base, selectedModel, headers)) {
-    const models = await fetchModelsFromUrl(catalogUrl, headers);
+  if (await probeWithInference(config.protocol, base, selectedModel, headers, timeoutMs)) {
+    const models = await fetchModelsFromUrl(catalogUrl, headers, timeoutMs);
     return models ? { valid: true, models } : { valid: true };
   }
 
-  const models = await fetchModelsFromUrl(catalogUrl, headers);
+  const models = await fetchModelsFromUrl(catalogUrl, headers, timeoutMs);
   if (models && !models.includes(selectedModel)) return { valid: false, reason: 'model-invalid', models };
   return { valid: false, reason: 'rejected' };
 }
@@ -146,7 +157,9 @@ export async function validateApiKey(
   apiKey: string,
   baseUrl?: string,
   model?: string,
+  timeoutSec?: number,
 ): Promise<KeyValidation> {
+  const timeoutMs = timeoutSec === undefined ? DEFAULT_TIMEOUT_MS : timeoutSec > 0 ? timeoutSec * 1000 : undefined;
   const config = findProvider(provider);
 
   if (!config) {
@@ -155,20 +168,21 @@ export async function validateApiKey(
       logger.error('No API key validation endpoint for provider', provider);
       return { valid: false, reason: 'network' };
     }
-    return checkCatalog(endpoint.url, endpoint.headers(apiKey));
+    return checkCatalog(endpoint.url, endpoint.headers(apiKey), timeoutMs);
   }
 
-  if (isCustomBaseUrl(config, baseUrl)) return validateCustomServer(config, apiKey, baseUrl as string, model);
+  if (isCustomBaseUrl(config, baseUrl))
+    return validateCustomServer(config, apiKey, baseUrl as string, model, timeoutMs);
 
   const headers = PROTOCOL_HEADERS[config.protocol](apiKey);
   const base = resolveBaseUrl(config);
   const catalogUrl = `${base}/models`;
-  if (!config.keyCheckPath) return checkCatalog(catalogUrl, headers);
+  if (!config.keyCheckPath) return checkCatalog(catalogUrl, headers, timeoutMs);
 
-  const authenticated = await probeAuth(`${base}${config.keyCheckPath}`, headers);
+  const authenticated = await probeAuth(`${base}${config.keyCheckPath}`, headers, timeoutMs);
   if (!authenticated.valid) return authenticated;
 
   const warning = spendWarning(authenticated.body);
-  const models = await fetchModelsFromUrl(catalogUrl, headers);
+  const models = await fetchModelsFromUrl(catalogUrl, headers, timeoutMs);
   return { valid: true, ...(models ? { models } : {}), ...(warning ? { warning } : {}) };
 }

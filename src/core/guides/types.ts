@@ -72,6 +72,9 @@ export interface Settings {
   aiBaseUrl: string;
   aiLanguage: string;
   aiPrePrompt: string;
+  aiMaxOutputTokens: number;
+  aiRequestTimeoutSec: number;
+  aiStopWaitSec: number;
   voiceEnabled: boolean;
   voiceProvider: VoiceProvider;
   voiceApiKey: string;
@@ -99,6 +102,9 @@ export type SettingsKey = keyof Settings;
 export const PROFILE_SETTING_KEYS = [
   'aiPrePrompt',
   'aiLanguage',
+  'aiMaxOutputTokens',
+  'aiRequestTimeoutSec',
+  'aiStopWaitSec',
   'aiProvider',
   'aiModel',
   'aiApiKey',

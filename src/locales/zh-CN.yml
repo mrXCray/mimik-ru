@@ -89,7 +89,7 @@ settings:
   modelCustom: 自定义模型
   baseUrl: 基础 URL
   useOwnServer: 使用自己的服务器
-  ownServerHintOpenai: "支持 Ollama、LM Studio、vLLM 或任何兼容 OpenAI 的服务器。"
+  ownServerHintOpenai: "支持 llama.cpp、Ollama、LM Studio、vLLM 或任何兼容 OpenAI 的服务器。"
   ownServerHintAnthropic: "支持 LiteLLM 代理或任何兼容 Anthropic 的服务器。"
   apiKey: API 密钥
   showKey: 显示密钥
@@ -100,6 +100,19 @@ settings:
   prePromptClear: "移除项目背景"
   prePromptPlaceholder: "描述产品、受众、术语和写作风格，可以使用 Markdown。"
   prePromptHint: "每次 AI 请求都会附带：步骤描述、标题和改写。"
+  apiKeyOptional: "自有服务器可不填"
+  testModel: "测试"
+  testHint: "使用上方设置发送一次真实的步骤描述请求。"
+  testRunning: "正在发送测试请求…"
+  testOk: "$1 秒内回复："
+  testEmpty: "模型在 $1 秒内返回了空回复。若为推理模型，请关闭推理（llama.cpp：--reasoning-budget 0）或提高 token 上限。"
+  testTimeout: "$1 秒内无回复。请增加请求超时或检查服务器。"
+  testFailed: "$1 秒后失败：$2"
+  limits: "限制"
+  maxOutputTokens: "回复最大 token 数"
+  requestTimeout: "请求超时（秒）"
+  stopWait: "录制后等待（秒）"
+  limitsHint: "0 表示不限制。等待指停止录制后等待步骤描述的时长，之后再生成标题。"
   voiceNarration: 语音讲解
   voiceUsingAiKey: "未设置语音密钥，因此 Mimik 会使用上方 AI 描述中的 OpenAI 密钥。"
   aiNoKey: "未设置 API 密钥，步骤将使用普通的规则描述。"

@@ -1,4 +1,5 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
+import type { AiTestRequest, AiTestResult } from '@/core/capture/ai/test-model';
 import type { DOMContext } from '@/core/capture/dom/context';
 import type { CaptureStateValue } from '@/core/capture/machine';
 import type { ElementMeta } from '@/core/guides/types';
@@ -114,6 +115,8 @@ export interface ValidateApiKeyData {
   apiKey: string;
   baseUrl?: string;
   model?: string;
+  /** Per-request timeout in seconds; 0 waits as long as it takes. */
+  timeoutSec?: number;
 }
 
 export interface ValidateApiKeyResponse {
@@ -152,6 +155,7 @@ interface MimikProtocol {
   generateGuideDescription(data: GenerateGuideDescriptionData): GenerateGuideDescriptionResponse;
   validateApiKey(data: ValidateApiKeyData): ValidateApiKeyResponse;
   rewriteSelection(data: RewriteSelectionData): RewriteSelectionResponse;
+  testAi(data: AiTestRequest): AiTestResult;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<MimikProtocol>();

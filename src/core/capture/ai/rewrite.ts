@@ -3,6 +3,7 @@ import { settingsForGuide } from '@/core/profiles/guide-settings';
 import { logger } from '@/lib/logger';
 import type { RewriteSelectionResponse } from '@/lib/messaging';
 import { resolveAiKey } from './keys';
+import { AI_LIMIT_KEYS, generationLimits, resolveAiLimits } from './limits';
 import { AI_PROVIDERS } from './models';
 import { applyPromptSettings, type PromptSettings, resolvePromptSettings } from './prompt-settings';
 import { REWRITE_PROMPT } from './prompts';
@@ -36,9 +37,10 @@ export async function rewriteSelection(
     'aiBaseUrl',
     'aiLanguage',
     'aiPrePrompt',
+    ...AI_LIMIT_KEYS,
   ]);
-  const { provider, apiKey } = resolveAiKey(settings);
-  if (!apiKey) return { error: 'no-api-key' };
+  const { provider, apiKey, usable } = resolveAiKey(settings);
+  if (!usable) return { error: 'no-api-key' };
 
   try {
     const { text: raw } = await generateText({
@@ -49,7 +51,7 @@ export async function rewriteSelection(
         settings.aiBaseUrl as string | undefined,
       ),
       prompt: buildRewritePrompt(text, instruction, resolvePromptSettings(settings)),
-      maxOutputTokens: 400,
+      ...generationLimits(resolveAiLimits(settings)),
     });
 
     const cleaned = cleanRewrite(raw);

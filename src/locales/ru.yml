@@ -89,7 +89,7 @@ settings:
   modelCustom: Своя модель
   baseUrl: Базовый URL
   useOwnServer: Использовать свой сервер
-  ownServerHintOpenai: "Работает с Ollama, LM Studio, vLLM или любым OpenAI-совместимым сервером."
+  ownServerHintOpenai: "Работает с llama.cpp, Ollama, LM Studio, vLLM или любым OpenAI-совместимым сервером."
   ownServerHintAnthropic: "Работает с прокси LiteLLM или любым Anthropic-совместимым сервером."
   apiKey: API-ключ
   showKey: Показать ключ
@@ -100,6 +100,19 @@ settings:
   prePromptClear: "Удалить контекст проекта"
   prePromptPlaceholder: "Опишите продукт, аудиторию, термины и стиль текста. Можно в Markdown."
   prePromptHint: "Отправляется с каждым запросом к ИИ: описания шагов, названия и переписывание."
+  apiKeyOptional: "Не обязателен для своего сервера"
+  testModel: "Протестировать"
+  testHint: "Отправляет настоящий запрос описания шага с настройками выше."
+  testRunning: "Отправляем тестовый запрос…"
+  testOk: "Ответ за $1 с:"
+  testEmpty: "Модель вернула пустой ответ за $1 с. Если это модель с рассуждениями, отключите их (для llama.cpp: --reasoning-budget 0) или увеличьте лимит токенов."
+  testTimeout: "Нет ответа за $1 с. Увеличьте таймаут запроса или проверьте сервер."
+  testFailed: "Ошибка через $1 с: $2"
+  limits: "Лимиты"
+  maxOutputTokens: "Макс. токенов в ответе"
+  requestTimeout: "Таймаут запроса, с"
+  stopWait: "Ожидание после записи, с"
+  limitsHint: "0 — без ограничения. Ожидание — сколько после остановки записи ждать описания шагов, прежде чем писать название."
   voiceNarration: Голосовые комментарии
   voiceUsingAiKey: "Ключ для голоса не задан, поэтому Mimik использует ключ OpenAI из раздела «ИИ-описания» выше."
   aiNoKey: "API-ключ не задан, поэтому шаги получат простые описания по правилам."

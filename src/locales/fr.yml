@@ -89,7 +89,7 @@ settings:
   modelCustom: Modèle personnalisé
   baseUrl: URL de base
   useOwnServer: Utiliser mon propre serveur
-  ownServerHintOpenai: "Fonctionne avec Ollama, LM Studio, vLLM ou tout serveur compatible OpenAI."
+  ownServerHintOpenai: "Fonctionne avec llama.cpp, Ollama, LM Studio, vLLM ou tout serveur compatible OpenAI."
   ownServerHintAnthropic: "Fonctionne avec un proxy LiteLLM ou tout serveur compatible Anthropic."
   apiKey: "Clé API"
   showKey: Afficher la clé
@@ -100,6 +100,19 @@ settings:
   prePromptClear: "Supprimer le contexte du projet"
   prePromptPlaceholder: "Décrivez le produit, le public, les termes et le style d'écriture. Le Markdown est accepté."
   prePromptHint: "Envoyé avec chaque requête IA : descriptions d'étapes, titres et reformulations."
+  apiKeyOptional: "Facultative pour votre propre serveur"
+  testModel: "Tester"
+  testHint: "Envoie une vraie requête de description d'étape avec les réglages ci-dessus."
+  testRunning: "Envoi de la requête de test…"
+  testOk: "Réponse en $1 s :"
+  testEmpty: "Le modèle a renvoyé une réponse vide en $1 s. S'il s'agit d'un modèle de raisonnement, désactivez-le (llama.cpp : --reasoning-budget 0) ou augmentez la limite de jetons."
+  testTimeout: "Aucune réponse en $1 s. Augmentez le délai ou vérifiez le serveur."
+  testFailed: "Échec après $1 s : $2"
+  limits: "Limites"
+  maxOutputTokens: "Jetons max. de réponse"
+  requestTimeout: "Délai de requête, s"
+  stopWait: "Attente après l'enregistrement, s"
+  limitsHint: "0 signifie aucune limite. L'attente est le temps accordé aux descriptions d'étapes à l'arrêt de l'enregistrement."
   voiceNarration: "Narration vocale"
   voiceUsingAiKey: "Aucune clé vocale n'est définie : Mimik utilise la clé OpenAI des descriptions IA ci-dessus."
   aiNoKey: "Aucune clé API définie, les étapes utiliseront donc des descriptions simples basées sur des règles."
