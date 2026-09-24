@@ -87,7 +87,7 @@ Each step gets a screenshot with the clicked element highlighted and zoomed in. 
 
 **Русская сборка с дополнениями** (профили, контекст проекта, экспорт в BookStack): готовые пакеты для Chrome, Brave и Firefox на странице [Releases](https://github.com/mrXCray/mimik-ru/releases), инструкция по установке: [INSTALL.ru.md](INSTALL.ru.md).
 
-Available in English, Russian, Spanish, Brazilian Portuguese, French, German, and Simplified Chinese. The AI description language is set separately, so you can run Mimik in English and generate guides in Spanish, or any combination.
+Available in English, Russian, Polish, Serbian (Cyrillic), Spanish, Brazilian Portuguese, French, German, and Simplified Chinese. The AI description language is set separately, so you can run Mimik in English and generate guides in Spanish, or any combination.
 
 > \[!IMPORTANT]
 >

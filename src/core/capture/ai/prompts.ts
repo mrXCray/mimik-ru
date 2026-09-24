@@ -69,6 +69,8 @@ export const AI_LANGUAGES = [
   { code: 'fr', label: 'Français' },
   { code: 'de', label: 'Deutsch' },
   { code: 'ru', label: 'Русский' },
+  { code: 'pl', label: 'Polski' },
+  { code: 'sr', label: 'Српски' },
 ] as const;
 
 export type AILanguageCode = (typeof AI_LANGUAGES)[number]['code'];
@@ -82,6 +84,8 @@ const LANGUAGE_NAMES: Record<string, string> = {
   ko: 'Korean',
   zh: 'Chinese',
   ru: 'Russian',
+  pl: 'Polish',
+  sr: 'Serbian (Cyrillic script)',
 };
 
 export function getLanguageSuffix(locale: string): string {
@@ -113,12 +117,17 @@ export const STEP_STYLE_RULES = `Writing rules for the step text:
 
 const STYLE_RULES_BY_LANGUAGE: Record<string, string> = {
   ru: `- In Russian, use the polite imperative (Нажмите, Выберите, Введите, Откройте, Включите), never the informal one (Нажми). Put on-screen names in «ёлочки» quotes and never translate them. Write the kind of control in lowercase before the name, following these patterns (NAME and VALUE stand for the real text from the context): нажмите кнопку «NAME», откройте вкладку «NAME», введите «VALUE» в поле «NAME». A name in English stays in English inside the Russian sentence.`,
+  pl: `- In Polish, use the second-person singular imperative that Polish software instructions use (Kliknij, Wybierz, Wpisz, Otwórz, Włącz). Put on-screen names in „…” quotes and never translate them. Write the kind of control in lowercase before the name, following these patterns (NAME and VALUE stand for the real text from the context): kliknij przycisk „NAME”, otwórz kartę „NAME”, wpisz „VALUE” w polu „NAME”. A name in English stays in English inside the Polish sentence.`,
+  sr: `- In Serbian, write in Cyrillic script and use the polite plural imperative (Кликните, Изаберите, Унесите, Отворите, Укључите), never the informal one (Кликни). Put on-screen names in „…“ quotes and never translate or transliterate them. Write the kind of control in lowercase before the name, following these patterns (NAME and VALUE stand for the real text from the context): кликните дугме „NAME“, отворите картицу „NAME“, унесите „VALUE“ у поље „NAME“. A name in English or in Latin script stays exactly as it is.`,
   en: `- Use straight double quotes around on-screen names.`,
 };
 
-/** Technical action markers a model sometimes copies from the context line "→ Target: … (click)". */
-const TRAILING_ACTION_MARKER =
-  /\s*\((?:click|input|select|change|submit|keydown|keypress|navigate|copy|paste|cut|drag)\)\s*$/i;
+/**
+ * The action marker a model sometimes copies from the context line "→ Target: … (click)", in any
+ * language ("(клик)", "(kliknięcie)"): one lower-case word in brackets at the very end, so "(PDF)" and
+ * brackets inside a quoted name ("«Отчёт (PDF)»") are kept.
+ */
+const TRAILING_ACTION_MARKER = /\s*\(\p{Ll}{2,15}\)\s*$/u;
 
 /** Tidies a step description the way the built-in rules ask: no copied action marker, no closing period. */
 export function tidyStepDescription(text: string): string {

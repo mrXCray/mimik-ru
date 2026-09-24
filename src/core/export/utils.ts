@@ -43,6 +43,8 @@ const LOCALE_MAP: Record<string, string> = {
   fr: 'fr',
   de: 'de-DE',
   ru: 'ru-RU',
+  pl: 'pl-PL',
+  sr: 'sr-Cyrl-RS',
 };
 
 export function formatDate(timestamp: number): string {

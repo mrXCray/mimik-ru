@@ -65,8 +65,8 @@ describe('getLanguageSuffix', () => {
 });
 
 describe('AI_LANGUAGES', () => {
-  it('has 7 supported languages', () => {
-    expect(AI_LANGUAGES).toHaveLength(7);
+  it('has 9 supported languages', () => {
+    expect(AI_LANGUAGES).toHaveLength(9);
   });
 
   it('includes English as first entry', () => {
@@ -75,6 +75,16 @@ describe('AI_LANGUAGES', () => {
 
   it('includes Simplified Chinese', () => {
     expect(AI_LANGUAGES).toContainEqual({ code: 'zh-CN', label: '中文' });
+  });
+
+  it('includes Polish and Serbian', () => {
+    expect(AI_LANGUAGES).toContainEqual({ code: 'pl', label: 'Polski' });
+    expect(AI_LANGUAGES).toContainEqual({ code: 'sr', label: 'Српски' });
+  });
+
+  it('asks for Serbian in Cyrillic script', () => {
+    expect(getLanguageSuffix('sr')).toContain('Serbian (Cyrillic script)');
+    expect(getLanguageSuffix('pl')).toContain('Polish');
   });
 
   it('includes Russian', () => {
@@ -132,6 +142,11 @@ describe('tidyStepDescription', () => {
     expect(tidyStepDescription('Нажмите кнопку «Сохранить» (click)')).toBe('Нажмите кнопку «Сохранить»');
     expect(tidyStepDescription('Click the "Save" button.')).toBe('Click the "Save" button');
     expect(tidyStepDescription('Нажмите «Далее» (click).')).toBe('Нажмите «Далее»');
+  });
+
+  it('drops a translated action marker', () => {
+    expect(tidyStepDescription('Кликните дугме „Update profile“ (клик)')).toBe('Кликните дугме „Update profile“');
+    expect(tidyStepDescription('Kliknij przycisk „Zapisz” (kliknięcie).')).toBe('Kliknij przycisk „Zapisz”');
   });
 
   it('keeps an ellipsis and ordinary brackets', () => {

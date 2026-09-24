@@ -8,7 +8,7 @@ import type { DescriptionSource } from '@/core/guides/types';
 import StepSourceBadge from '@/ui/shared/StepSourceBadge';
 
 const SOURCES: DescriptionSource[] = ['ai', 'narration', 'heuristic', 'manual'];
-const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
+const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru', 'pl', 'sr'];
 
 describe('StepSourceBadge', () => {
   it('says nothing for a step recorded before the field existed', () => {
